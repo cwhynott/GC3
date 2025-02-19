@@ -1,5 +1,8 @@
 # CS410
 
+to run the backend:
+1. Navigate into backend folder
+2. python3 app.py
 
 to run the frontend:
 
