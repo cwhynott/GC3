@@ -32,7 +32,16 @@ def upload_file():
 
     # Generate spectrogram
     plt.figure()
-    plt.specgram(iq_data, Fs=1e6, cmap='viridis')
+    Pxx, freqs, bins, im = plt.specgram(iq_data, Fs=1e6, cmap='viridis')
+    plt.close()
+
+    # Transpose the spectrogram data to flip the axes
+    Pxx = 10 * np.log10(Pxx.T)
+
+    # Plot the transposed spectrogram
+    plt.imshow(Pxx, aspect='auto', extent=[0, bins[-1], freqs[0], freqs[-1]], cmap='viridis')
+    plt.xlabel("Time [s]")
+    plt.ylabel("Frequency [Hz]")
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
     plt.close()
@@ -81,7 +90,16 @@ def get_file_spectrogram(file_id):
         
         # Generate spectrogram
         plt.figure()
-        plt.specgram(iq_data, Fs=1e6, cmap='viridis')
+        Pxx, freqs, bins, im = plt.specgram(iq_data, Fs=1e6, cmap='viridis')
+        plt.close()
+
+        # Transpose the spectrogram data to flip the axes
+        Pxx = 10 * np.log10(Pxx.T)
+
+        # Plot the transposed spectrogram
+        plt.imshow(Pxx, aspect='auto', extent=[0, bins[-1], freqs[0], freqs[-1]], cmap='viridis')
+        plt.xlabel("Time [s]")
+        plt.ylabel("Frequency [Hz]")
         buf = io.BytesIO()
         plt.savefig(buf, format='png')
         plt.close()
