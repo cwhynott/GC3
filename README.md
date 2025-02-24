@@ -43,12 +43,3 @@ python3 app.py
 ```
 
 ---
-
-## 📌 Notes  
-- Ensure MongoDB is running before starting the backend.  
-- If you encounter issues, check the logs using:  
-  ```sh
-  brew services list
-  ```
-
----
