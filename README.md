@@ -1,5 +1,3 @@
-# Project Setup Guide  
-
 ## Prerequisites  
 Ensure you have the following installed:  
 - **[MongoDB Community Edition 8.0](https://www.mongodb.com/try/download/community)**
