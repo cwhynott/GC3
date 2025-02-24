@@ -48,7 +48,7 @@ brew services stop mongodb-community@8.0
     ```sh
     cd backend
     ```
-2. Install required Python packages:
+2. Install required Python packages (if not installed yet):
     ```sh
     pip install Flask gridfs matplotlib
     ```
