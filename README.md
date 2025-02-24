@@ -1,5 +1,3 @@
-cwhynott: Generate a ReadME for this project. This is what we currently have:
-
 # Project Setup Guide  
 
 ## Prerequisites  
