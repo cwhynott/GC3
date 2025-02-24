@@ -1,8 +1,15 @@
-# CS410
+Install MongoDB
+    brew tap mongodb/brew
+    brew update
+    brew install mongodb-community@8.0
 
+Start/Stop MongoDB
+    brew services start mongodb-community@8.0
+    brew services stop mongodb-community@8.0
 
-to run the frontend:
+Run Frontend
+    npm install
+    npm run dev
 
-1. Navigate into frontend folder
-2. npm install (if not installed yet)
-3. npm run dev
+Run backend
+    python3 app.py
