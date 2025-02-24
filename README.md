@@ -11,5 +11,5 @@ Run Frontend:
     npm install (if not installed),
     npm run dev
 
-Run backend:
+Run Backend:
     python3 app.py
