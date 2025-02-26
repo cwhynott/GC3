@@ -1,4 +1,4 @@
-/**
+/** 
  * CS-410: Entry point for the React application
  * @file main.tsx
  * @authors 
