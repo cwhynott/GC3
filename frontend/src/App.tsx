@@ -1,26 +1,37 @@
+/**
+ * CS-410: Frontend for uploading files, generating spectrograms, and interacting with MongoDB
+ * @file app.tsx
+ * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
+ * @collaborators None
+ * @date February 26, 2025
+ */
+
 import { useState, useEffect, ChangeEvent } from 'react';
 import './App.css';
 import './EnhancedApp.css';
 
+// Interface for saved files
 interface SavedFile {
   _id: string;
   filename: string;
 }
 
 function App() {
+  // State variables
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [spectrogram, setSpectrogram] = useState<string | null>(null);
   const [savedFiles, setSavedFiles] = useState<SavedFile[]>([]);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
 
+  // Handle file selection
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
     setSelectedFile(file);
     setSelectedFileName(file ? file.name : 'No file selected');
   };
 
+  // Handle file upload
   const handleUpload = async () => {
     if (!selectedFile) return setStatusMessage('No file selected');
     setStatusMessage('Uploading file...');
@@ -37,6 +48,7 @@ function App() {
     }
   };
 
+  // Handle file save to database
   const handleSave = async () => {
     if (!selectedFile) return setStatusMessage('No file selected');
     setStatusMessage('Saving file...');
@@ -51,6 +63,7 @@ function App() {
     }
   };
 
+  // Handle clearing all saved files
   const handleClearFiles = async () => {
     setStatusMessage('Clearing all saved files...');
     try {
@@ -62,6 +75,7 @@ function App() {
     }
   };
 
+  // Handle loading a saved file
   const handleLoadFile = async (fileId: string) => {
     setStatusMessage('Loading file...');
     try {
@@ -75,6 +89,7 @@ function App() {
     }
   };
 
+  // Fetch saved files from the database
   const fetchSavedFiles = async () => {
     try {
       const response = await fetch('http://127.0.0.1:5000/files');
@@ -85,6 +100,7 @@ function App() {
     }
   };
 
+  // Fetch saved files on component mount
   useEffect(() => {
     fetchSavedFiles();
   }, []);

@@ -1,3 +1,11 @@
+/** 
+ * CS-410: Base styles for the application
+ * @file app.css
+ * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
+ * @collaborators None
+ * @date February 26, 2025
+ */
+
 #root {
   max-width: 1280px;
   margin: 0 auto;

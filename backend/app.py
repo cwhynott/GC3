@@ -1,5 +1,5 @@
 """
-CS-410 Thesis Project: Generates spectrograms from uploaded files and stores them in MongoDB
+CS-410: Generates spectrograms from uploaded files and stores them in MongoDB
 @file app.py
 @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
 @collaborators None
