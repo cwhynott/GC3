@@ -3,7 +3,6 @@
  * @file main.tsx
  * @authors 
  * @collaborators None
- * @date February 26, 2025
  */
 
 import { StrictMode } from 'react'
