@@ -16,7 +16,7 @@ interface SavedFile {
   filename: string;
 }
 import FileHandle from './components/FileHandle';
-import BasicTabs from './components/Tabs';
+import DisplayTabs from './components/Tabs';
 
 function App() {
   // State variables
