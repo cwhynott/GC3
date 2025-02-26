@@ -1,6 +1,5 @@
 import { useState, useEffect, ChangeEvent } from 'react';
 import '../App.css';
-// import './EnhancedApp.css';
 
 interface SavedFile {
   _id: string;
