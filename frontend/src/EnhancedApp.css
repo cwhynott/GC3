@@ -1,16 +1,9 @@
 /**
- * CS-410: Base styles for the application
- * @file app.css
+ * CS-410: Enhancing the application style
+ * @file EnhancedApp.css
  * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
  * @collaborators None
  */
-
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
 
 .enhanced-app-container {
   font-family: Arial, sans-serif;
