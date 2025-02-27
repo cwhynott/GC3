@@ -31,14 +31,4 @@ class SigMF():
             freq_upper = annotation.get('freq_upper_edge')
             label = annotation.get('label')
             comment = annotation.get('comment')
-            Annotation(sample_start, sample_count, freq_lower, freq_upper, label, comment)
-
-def main():
-    filename = "qpsk_in_noise.sigmf-meta"
-    f = open(filename,)
-    sig = SigMF(f)
-    print(sig)
-
-
-if __name__ == "__main__":
-    main()
+            self.annotations.append(Annotation(sample_start, sample_count, freq_lower, freq_upper, label, comment))

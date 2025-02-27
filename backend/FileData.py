@@ -1,3 +1,5 @@
+
+
 import SigMF
 
 # class that stores file level data pertaining to a raw iq file
@@ -14,9 +16,9 @@ class FileData():
 
         self.raw_data_filename = raw_data_filename
         self.csv_filename = f"{file_basename}.csv"
-        self.spectrogram_filename = f"{file_basename}_spectrogram.csv"
-        self.iq_plot_filename = f"{file_basename}_iq_plot.csv"
-        self.time_domain_filename = f"{file_basename}_time_domain.csv"
-        self.freq_domain_filename = f"{file_basename}_freq_domain.csv"
+        self.spectrogram_filename = f"{file_basename}_spectrogram.png"
+        self.iq_plot_filename = f"{file_basename}_iq_plot.png"
+        self.time_domain_filename = f"{file_basename}_time_domain.png"
+        self.freq_domain_filename = f"{file_basename}_freq_domain.png"
         self.sigmf = sigmf
         self.fft = fft
