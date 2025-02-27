@@ -1,12 +1,20 @@
+"""
+ CS-410: SigMF class that stores sigmf metadata info
+ @file SigMF.py
+ @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
+ @collaborators None
+"""
+
 import json
 import Annotation
 
 class SigMF():
-    """
-        Description: Initializes SigMF object
-        :param sigmf_file: the sigmf metadata file to be parsed
-    """
+    
     def __init__(self, sigmf_file):
+        """
+            Description: Initializes SigMF object
+            :param sigmf_file: the sigmf metadata file to be parsed
+        """
         sigmf = sigmf_file.read()
         data = json.loads(sigmf)
 

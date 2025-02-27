@@ -1,4 +1,9 @@
-
+"""
+ CS-410: Annotation class that holds information for a single spectrogram information
+ @file Annotation.py
+ @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
+ @collaborators None
+"""
 
 class Annotation():
 
