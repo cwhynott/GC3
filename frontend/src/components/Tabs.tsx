@@ -2,6 +2,9 @@ import * as React from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import { IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import FileHandle from './FileHandle'
 
 interface TabPanelProps {
@@ -34,29 +37,70 @@ function a11yProps(index: number) {
 
 function DisplayTabs() {
     const [value, setValue] = React.useState(0);
+    const [tabs, setTabs] = React.useState([{ label: "Tab 1", content: <FileHandle /> }]);
   
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
       setValue(newValue);
     };
+
+    const handleAdd = () => {
+      const tabIndex = tabs.length;
+      setTabs([...tabs, { 
+        label: `Tab ${tabIndex + 1}`, 
+        content: <FileHandle /> 
+      }]);
+    };
+
+    const handleDelete = (index_to_delete: number) => {
+      setTabs(prevTabs => {
+        // First, remove the tab at the specified index
+        const newTabs = prevTabs.filter((_, index) => index !== index_to_delete)
+        setValue(value => Math.min(value, newTabs.length - 1));
+        
+        // Then, update the labels of the remaining tabs
+        return newTabs.map((tab, index) => ({
+          ...tab,
+          label: `Tab ${index + 1}`
+        }))
+      })
+    }
+    
   
     return (
       <Box sx={{ width: '100%' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={value} onChange={handleChange} aria-label="spectrogram tabs">
-            <Tab label="Item One" {...a11yProps(0)} />
-            <Tab label="Item Two" {...a11yProps(1)} />
-            <Tab label="Item Three" {...a11yProps(2)} />
+          <Tabs sx={{ height: "30px" }} 
+                value={value} 
+                onChange={handleChange} 
+                aria-label="spectrogram tabs" 
+                variant="scrollable" 
+                scrollButtons="auto" >
+            {tabs.map((tab, index) => (
+                <Tab 
+                  key={index} 
+                  label={tab.label} 
+                  {...a11yProps(index)}
+                  icon={
+                    <IconButton size="small" onClick={(click) => {
+                      click.stopPropagation();
+                      handleDelete(index);
+                    }}>
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  }
+                  iconPosition="end"
+                />
+            ))}
+            <Button variant="contained" onClick={handleAdd}>
+                Add Tab
+            </Button>
           </Tabs>
         </Box>
-        <CustomTabPanel value={value} index={0}>
-          <FileHandle />
-        </CustomTabPanel>
-        <CustomTabPanel value={value} index={1}>
-          <FileHandle />
-        </CustomTabPanel>
-        <CustomTabPanel value={value} index={2}>
-          <FileHandle />
-        </CustomTabPanel>
+        {tabs.map((tab, index) => (
+          <CustomTabPanel key={index} value={value} index={index}>
+            {tab.content}
+          </CustomTabPanel>
+        ))}
       </Box>
     );
 }
