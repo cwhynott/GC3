@@ -7,7 +7,6 @@
 
 import { useState, useEffect, ChangeEvent } from 'react';
 import './App.css';
-import FileHandle from './components/FileHandle';
 import DisplayTabs from './components/Tabs';
 import './EnhancedApp.css';
 
