@@ -8,7 +8,6 @@
 import { useState, useEffect, ChangeEvent, useRef } from 'react';
 import './App.css';
 import './EnhancedApp.css';
-import FileHandle from './components/FileHandle';
 import DisplayTabs from './components/Tabs';
 
 // Interface for saved files
