@@ -1,10 +1,83 @@
-/**
- * CS-410: Enhancing the application style
+/** 
+ * CS-410: Enhanced CSS for the application
  * @file EnhancedApp.css
  * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
  * @collaborators None
  */
 
+/* Style the header */
+.app-header {
+  display: flex;
+  justify-content: center; /* Center the content horizontally */
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  position: relative; /* Allow absolute positioning of the menu bar */
+}
+
+/* Style the menu bar */
+.menu-bar {
+  display: flex;
+  gap: 10px;
+  position: absolute;
+  top: 40px;
+  left: 5px;
+}
+
+/* Style the menu item */
+.menu-item {
+  position: relative; /* Position the dropdown menu relative to this container */
+}
+
+/* Style the menu buttons */
+.menu-button {
+  padding: 10px 15px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #007bff;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.menu-button:hover {
+  background-color: #e9ecef;
+}
+
+/* Style the dropdown menu */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap; /* Prevent wrapping of dropdown items */
+}
+
+/* Style the dropdown items */
+.dropdown-item {
+  padding: 10px 15px;
+  font-size: 14px;
+  color: #333;
+  background-color: white;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f1f1f1;
+}
+
+/* Other existing styles */
 .enhanced-app-container {
   font-family: Arial, sans-serif;
   padding: 2rem;
@@ -13,12 +86,11 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.app-header {
+.app-header h1 {
   font-size: 2.5rem;
   font-weight: bold;
   color: #2c3e50;
-  margin-bottom: 2rem;
-  text-align: center;
+  margin: 0;
 }
 
 .status-banner {
@@ -115,4 +187,10 @@
   text-align: center;
   font-style: italic;
   color: #888;
+}
+
+.app-logo {
+  max-height: 100px;
+  width: auto;
+  padding-bottom: 10px;
 }
