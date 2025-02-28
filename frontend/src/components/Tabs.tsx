@@ -37,33 +37,40 @@ function a11yProps(index: number) {
 
 function DisplayTabs() {
     const [value, setValue] = React.useState(0);
-    const [tabs, setTabs] = React.useState([{ label: "Tab 1", content: <FileHandle /> }]);
+    const [tabs, setTabs] = React.useState([{ id: 0, label: "Tab 1", content: <FileHandle key={0} /> }]);
   
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
       setValue(newValue);
     };
 
     const handleAdd = () => {
-      const tabIndex = tabs.length;
+      const newId = tabs.length > 0 ? Math.max(...tabs.map(tab => tab.id)) + 1 : 0;
       setTabs([...tabs, { 
-        label: `Tab ${tabIndex + 1}`, 
-        content: <FileHandle /> 
+        id: newId,
+        label: `Tab ${tabs.length + 1}`, 
+        content: <FileHandle key={newId} /> 
       }]);
     };
 
     const handleDelete = (index_to_delete: number) => {
       setTabs(prevTabs => {
-        // First, remove the tab at the specified index
-        const newTabs = prevTabs.filter((_, index) => index !== index_to_delete)
-        setValue(value => Math.min(value, newTabs.length - 1));
+        // Remove the tab at the specified index
+        const newTabs = prevTabs.filter((_, index) => index !== index_to_delete);
         
-        // Then, update the labels of the remaining tabs
-        return newTabs.map((tab, index) => ({
+        // Update the labels of the remaining tabs
+        const updatedTabs = newTabs.map((tab, index) => ({
           ...tab,
           label: `Tab ${index + 1}`
-        }))
-      })
-    }
+        }));
+    
+        // Adjust the selected tab index
+        if (index_to_delete <= value) {
+          setValue(Math.max(0, value));
+        }
+    
+        return updatedTabs;
+      });
+    };
     
   
     return (
