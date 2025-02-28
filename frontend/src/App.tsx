@@ -8,6 +8,7 @@
 import { useState, useEffect, ChangeEvent, useRef } from 'react';
 import './App.css';
 import './EnhancedApp.css';
+import DisplayTabs from './components/Tabs';
 
 // Interface for saved files
 interface SavedFile {
@@ -111,6 +112,8 @@ function App() {
     setDropdownOpen(dropdownOpen === menu ? null : menu);
   };
 
+
+
   return (
     <main className="enhanced-app-container">
       <header className="app-header">
@@ -160,28 +163,12 @@ function App() {
         </nav>
         <img src="/images/GC3 Logo.png" alt="GC3 Logo" className="app-logo" />
       </header>
+      <DisplayTabs />
       {statusMessage && <p className="status-banner">{statusMessage}</p>}
-      <div className="file-actions">
-        <input type="file" onChange={handleFileChange} className="file-input" />
-        <button onClick={handleUpload} className="btn upload-btn">Upload</button>
-        <button onClick={handleSave} className="btn save-btn">Save to Database</button>
-        <button onClick={handleClearFiles} className="btn clear-btn">Clear All Saved Files</button>
-      </div>
-      {selectedFileName && <p className="selected-file" style={{ color: '#2c3e50', fontWeight: 'bold' }}>Current selection: {selectedFileName}</p>}
-      {spectrogram && <img src={`data:image/png;base64,${spectrogram}`} alt="Spectrogram" className="spectrogram-img" />}
-      <div className="saved-files">
-        <h2 style={{ color: '#2c3e50' }}>Saved Files</h2>
-        <ul className="file-list">
-          {savedFiles.map(file => (
-            <li key={file._id} className="file-item">
-              {file.filename}
-              <button onClick={() => handleLoadFile(file._id)} className="btn load-btn">Load</button>
-            </li>
-          ))}
-        </ul>
-      </div>
     </main>
   );
 }
+
+
 
 export default App;
