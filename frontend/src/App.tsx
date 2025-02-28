@@ -7,16 +7,15 @@
 
 import { useState, useEffect, ChangeEvent, useRef } from 'react';
 import './App.css';
-import DisplayTabs from './components/Tabs';
 import './EnhancedApp.css';
+import FileHandle from './components/FileHandle';
+import DisplayTabs from './components/Tabs';
 
 // Interface for saved files
 interface SavedFile {
   _id: string;
   filename: string;
 }
-import FileHandle from './components/FileHandle';
-import DisplayTabs from './components/Tabs';
 
 function App() {
   // State variables
