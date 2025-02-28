@@ -36,38 +36,47 @@ def create_app():
     @app.route('/upload', methods=['POST'])
     def upload_file():
         """
-        Uploads a file, generates a spectrogram, and returns the spectrogram as a base64 encoded image.
+        Uploads both .cfile and .sigmf-meta files, generates a spectrogram, 
+        and returns the spectrogram as a base64 encoded image.
         @return JSON response containing the base64 encoded spectrogram image.
         """
-        # Check if a file is part of the request
-        if 'file' not in request.files:
-            return jsonify({'error': 'No file uploaded'}), 400
+        # Ensure both files are in the request
+        if 'cfile' not in request.files or 'metaFile' not in request.files:
+            return jsonify({'error': 'Both .cfile and .sigmf-meta files are required'}), 400
 
-        file = request.files['file']
-        # Reset file pointer and read data as a numpy array (assuming complex64 format)
-        file.seek(0)
-        iq_data = np.frombuffer(file.read(), dtype=np.complex64)
+        cfile = request.files['cfile']
+        metafile = request.files['metaFile']
+
+        # Read and process the .cfile (assuming complex64 format)
+        cfile.seek(0)
+        iq_data = np.frombuffer(cfile.read(), dtype=np.complex64)
+
+        # Read the .sigmf-meta file (optional: store for metadata reference)
+        metafile.seek(0)
+        meta_content = metafile.read().decode('utf-8')  # Read as text
+
+        # Debugging: Print metadata
+        print("Received .sigmf-meta file:", meta_content[:200])  # Print first 200 chars for debug
 
         # Generate spectrogram
         plt.figure()
         Pxx, freqs, bins, im = plt.specgram(iq_data, Fs=1e6, cmap='viridis')
         plt.close()
 
-        # Transpose the spectrogram data to flip the axes
-        Pxx = 10 * np.log10(Pxx.T)
-
-        # Plot the transposed spectrogram
-        plt.imshow(Pxx, aspect='auto', extent=[freqs[0], freqs[-1], 0, bins[-1]], cmap='viridis')
+        # Convert spectrogram to base64 for frontend display
+        buf = io.BytesIO()
+        plt.imshow(10 * np.log10(Pxx.T), aspect='auto', extent=[freqs[0], freqs[-1], bins[-1], 0], cmap='viridis')
         plt.xlabel("Frequency [Hz]")
         plt.ylabel("Time [s]")
-        buf = io.BytesIO()
         plt.savefig(buf, format='png')
         plt.close()
         buf.seek(0)
         encoded_img = base64.b64encode(buf.getvalue()).decode('utf-8')
 
-        print("Spectrogram generated and encoded")
-        return jsonify({'spectrogram': encoded_img})
+        print("Spectrogram generated and encoded successfully.")
+
+        return jsonify({'spectrogram': encoded_img, 'message': 'Files uploaded successfully'})
+    
 
     @app.route('/save', methods=['POST'])
     def save_file():

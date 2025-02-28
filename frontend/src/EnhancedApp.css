@@ -79,6 +79,7 @@
 
 /* Other existing styles */
 .enhanced-app-container {
+  width: 90%;
   font-family: Arial, sans-serif;
   padding: 2rem;
   background-color: #f5f7fa;
@@ -102,6 +103,34 @@
   text-align: center;
   margin-bottom: 1.5rem;
 }
+
+.file-selection {
+  display: flex;
+  flex-direction: column; /* Stack file selection buttons */
+  align-items: flex-start; /* Align everything to the left */
+  gap: 1rem; /* Space between elements */
+  margin-bottom: 2rem;
+}
+
+.file-row {
+  display: flex;
+  align-items: center; /* Align file input and text horizontally */
+  gap: 0.5rem; /* Minimal space between file input and file name */
+}
+
+.file-input {
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.selected-file {
+  font-size: 1rem;
+  color: black; /* Same black color as default text */
+  font-weight: normal; /* No bold */
+  margin-left: 0.5rem; /* Small spacing for better alignment */
+  white-space: nowrap; /* Prevents wrapping onto a new line */
+}
+
 
 .file-actions, .saved-files-actions {
   display: flex;
