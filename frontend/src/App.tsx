@@ -1,6 +1,8 @@
 /** 
  * CS-410: Frontend for uploading files, generating spectrograms, and interacting with MongoDB
  * @file app.tsx
+ * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
+ * @collaborators None
  */
 
 import { useState, useEffect, ChangeEvent, useRef } from 'react';

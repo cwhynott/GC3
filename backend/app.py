@@ -129,9 +129,9 @@ def create_app():
             Pxx = 10 * np.log10(Pxx.T)
 
             # Plot the transposed spectrogram
-            plt.imshow(Pxx, aspect='auto', extent=[0, bins[-1], freqs[0], freqs[-1]], cmap='viridis')
-            plt.xlabel("Time [s]")
-            plt.ylabel("Frequency [Hz]")
+            plt.imshow(Pxx, aspect='auto', extent=[freqs[0], freqs[-1], 0, bins[-1]], cmap='viridis')
+            plt.xlabel("Frequency [Hz]")
+            plt.ylabel("Time [s]")
             buf = io.BytesIO()
             plt.savefig(buf, format='png')
             plt.close()
