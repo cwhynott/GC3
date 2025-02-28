@@ -36,6 +36,8 @@ brew services stop mongodb-community@8.0
     ```
 2. Install dependencies (if not installed yet):
     ```sh
+    npm install @mui/material @emotion/react @emotion/styled
+    npm install @mui/icons-material
     npm install
     ```
 3. Start the development server:
