@@ -14,6 +14,10 @@ import base64
 from pymongo import MongoClient
 from bson import ObjectId
 from gridfs import GridFS
+from SigMF import SigMF
+from FileData import FileData
+import csv
+import os
 
 import matplotlib
 # Use the Agg backend for Matplotlib to avoid using any X server
@@ -36,8 +40,8 @@ def create_app():
     @app.route('/upload', methods=['POST'])
     def upload_file():
         """
-        Uploads both .cfile and .sigmf-meta files, generates a spectrogram, 
-        and returns the spectrogram as a base64 encoded image.
+        Uploads both .cfile and .sigmf-meta files, converts the cfile to CSV, 
+        generates a spectrogram, and returns the spectrogram as a base64 encoded image.
         @return JSON response containing the base64 encoded spectrogram image.
         """
         # Ensure both files are in the request
@@ -47,20 +51,35 @@ def create_app():
         cfile = request.files['cfile']
         metafile = request.files['metaFile']
 
+        # Parse the metadata file using SigMF class
+        sigmf_metadata = SigMF(metafile)
+
         # Read and process the .cfile (assuming complex64 format)
         cfile.seek(0)
         iq_data = np.frombuffer(cfile.read(), dtype=np.complex64)
 
-        # Read the .sigmf-meta file (optional: store for metadata reference)
-        metafile.seek(0)
-        meta_content = metafile.read().decode('utf-8')  # Read as text
+        # Convert complex data into CSV format
+        csv_filename = cfile.filename.replace('.cfile', '.csv')
+        csv_data = io.StringIO()
+        csv_writer = csv.writer(csv_data)
+        csv_writer.writerow(["Real", "Imaginary"])
+        
+        for sample in iq_data:
+            csv_writer.writerow([sample.real, sample.imag])
 
-        # Debugging: Print metadata
-        print("Received .sigmf-meta file:", meta_content[:200])  # Print first 200 chars for debug
+        csv_data.seek(0)  # Reset the pointer
+
+        # Save the CSV file to MongoDB
+        file_id = fs.put(csv_data.getvalue().encode(), filename=csv_filename)
+
+        # Initialize FileData object
+        file_data = FileData(raw_data_filename=cfile.filename, fft=1024, sigmf=sigmf_metadata)
+
+        print(f"CSV saved to GridFS with ID: {file_id}")
 
         # Generate spectrogram
         plt.figure()
-        Pxx, freqs, bins, im = plt.specgram(iq_data, Fs=1e6, cmap='viridis')
+        Pxx, freqs, bins, im = plt.specgram(iq_data, Fs=sigmf_metadata.sample_rate, Fc=sigmf_metadata.center_frequency, cmap='viridis')
         plt.close()
 
         # Convert spectrogram to base64 for frontend display
@@ -75,30 +94,33 @@ def create_app():
 
         print("Spectrogram generated and encoded successfully.")
 
-        return jsonify({'spectrogram': encoded_img, 'message': 'Files uploaded successfully'})
-    
+        return jsonify({'spectrogram': encoded_img, 'csv_id': str(file_id), 'message': 'CSV saved and spectrogram generated successfully'})
 
     @app.route('/save', methods=['POST'])
     def save_file():
         """
-        Saves a file to MongoDB using GridFS.
+        Saves a CSV file to MongoDB using GridFS.
         @return JSON response containing a success message and the file ID.
         """
-        # Check if a file is part of the request
-        if 'file' not in request.files:
-            return jsonify({'error': 'No file provided'}), 400
+        if 'csv_id' not in request.json:
+            return jsonify({'error': 'CSV file ID is required'}), 400
 
-        file = request.files['file']
-        file_content = file.read()  # Read the binary content
+        csv_id = request.json['csv_id']
 
         try:
-            # Use GridFS to store the file (GridFS splits the file into chunks)
-            file_id = fs.put(file_content, filename=file.filename)
-            print(f"File '{file.filename}' saved to GridFS with id {file_id}")
-            return jsonify({'message': 'File saved to MongoDB successfully', 'file_id': str(file_id)})
+            grid_out = fs.get(ObjectId(csv_id))
+            file_content = grid_out.read()
+
+            # Save CSV file in GridFS as an official record
+            saved_file_id = fs.put(file_content, filename=grid_out.filename)
+
+            print(f"CSV '{grid_out.filename}' saved with new ID {saved_file_id}")
+            return jsonify({'message': 'CSV file saved successfully', 'file_id': str(saved_file_id)})
+
         except Exception as e:
             print("Error saving file:", e)
             return jsonify({'error': str(e)}), 500
+
 
     @app.route('/files', methods=['GET'])
     def get_files():
