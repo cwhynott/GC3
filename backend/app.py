@@ -139,38 +139,39 @@ def create_app():
     @app.route('/file/<file_id>/spectrogram', methods=['GET'])
     def get_file_spectrogram(file_id):
         """
-        Retrieves a file from GridFS and generates a spectrogram.
+        Retrieves a CSV file from GridFS, converts it back to complex64, and generates a spectrogram.
         @param file_id: the ID of the file to retrieve.
         @return JSON response containing the base64 encoded spectrogram image.
         """
         try:
-            # Retrieve the file from GridFS using its ObjectId
+            # Retrieve the CSV file from GridFS
             grid_out = fs.get(ObjectId(file_id))
-            file_content = grid_out.read()
-            
-            # Convert the stored binary content back into a numpy array
-            iq_data = np.frombuffer(file_content, dtype=np.complex64)
-            
+            file_content = grid_out.read().decode()  # Read CSV data
+
+            # Convert CSV back to complex array
+            csv_reader = csv.reader(io.StringIO(file_content))
+            next(csv_reader)  # Skip header
+            iq_data = np.array([complex(float(row[0]), float(row[1])) for row in csv_reader], dtype=np.complex64)
+
             # Generate spectrogram
             plt.figure()
-            Pxx, freqs, bins, im = plt.specgram(iq_data, Fs=1e6, cmap='viridis')
+            Pxx, freqs, bins, im = plt.specgram(iq_data, Fs=8e6, cmap='viridis')
             plt.close()
 
-            # Transpose the spectrogram data to flip the axes
-            Pxx = 10 * np.log10(Pxx.T)
-
-            # Plot the transposed spectrogram
-            plt.imshow(Pxx, aspect='auto', extent=[freqs[0], freqs[-1], 0, bins[-1]], cmap='viridis')
+            # Convert spectrogram to base64 for frontend display
+            buf = io.BytesIO()
+            plt.imshow(10 * np.log10(Pxx.T), aspect='auto', extent=[freqs[0], freqs[-1], 0, bins[-1]], cmap='viridis')
             plt.xlabel("Frequency [Hz]")
             plt.ylabel("Time [s]")
-            buf = io.BytesIO()
             plt.savefig(buf, format='png')
             plt.close()
             buf.seek(0)
             encoded_img = base64.b64encode(buf.getvalue()).decode('utf-8')
+
             return jsonify({'spectrogram': encoded_img})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+
 
     @app.route('/refresh', methods=['POST'])
     def refresh_files():
