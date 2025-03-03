@@ -92,33 +92,49 @@ def create_app():
         buf.seek(0)
         encoded_img = base64.b64encode(buf.getvalue()).decode('utf-8')
 
-        print("Spectrogram generated and encoded successfully.")
+        spectrogram_id = fs.put(buf.getvalue(), filename=f"{cfile.filename}_spectrogram.png")
+
+        print(f"Spectrogram saved to GridFS with ID: {spectrogram_id}")
 
         return jsonify({'spectrogram': encoded_img, 'csv_id': str(file_id), 'message': 'CSV saved and spectrogram generated successfully'})
 
     @app.route('/save', methods=['POST'])
     def save_file():
         """
-        Saves a CSV file to MongoDB using GridFS.
-        @return JSON response containing a success message and the file ID.
+        Saves all related files (CSV, spectrogram, metadata, and FileData) in MongoDB under the original cfile name.
+        @return JSON response containing a success message and file ID.
         """
-        if 'csv_id' not in request.json:
-            return jsonify({'error': 'CSV file ID is required'}), 400
+        if 'csv_id' not in request.json or 'spectrogram_id' not in request.json or 'metadata' not in request.json or 'filedata' not in request.json:
+            return jsonify({'error': 'CSV ID, Spectrogram ID, Metadata, and FileData are required'}), 400
 
         csv_id = request.json['csv_id']
+        spectrogram_id = request.json['spectrogram_id']
+        metadata = request.json['metadata']  # Metadata in JSON format
+        filedata = request.json['filedata']  # Serialized FileData object in JSON format
 
         try:
-            grid_out = fs.get(ObjectId(csv_id))
-            file_content = grid_out.read()
+            # Retrieve CSV file from GridFS to extract the original filename
+            csv_file = fs.get(ObjectId(csv_id))
+            original_name = csv_file.filename.split(".")[0]  # Extract base name
 
-            # Save CSV file in GridFS as an official record
-            saved_file_id = fs.put(file_content, filename=grid_out.filename)
+            # Combine everything into a single database document
+            file_entry = {
+                "filename": original_name,
+                "csv_id": csv_id,
+                "spectrogram_id": spectrogram_id,
+                "metadata": metadata,
+                "filedata": filedata  # Store FileData object
+            }
 
-            print(f"CSV '{grid_out.filename}' saved with new ID {saved_file_id}")
-            return jsonify({'message': 'CSV file saved successfully', 'file_id': str(saved_file_id)})
+            # Insert into MongoDB as a document
+            saved_file_id = db.file_records.insert_one(file_entry).inserted_id
+
+            print(f"File '{original_name}' saved with ID {saved_file_id}")
+
+            return jsonify({'message': 'All related files saved successfully', 'file_id': str(saved_file_id)})
 
         except Exception as e:
-            print("Error saving file:", e)
+            print("Error saving files:", e)
             return jsonify({'error': str(e)}), 500
 
 
@@ -139,38 +155,23 @@ def create_app():
     @app.route('/file/<file_id>/spectrogram', methods=['GET'])
     def get_file_spectrogram(file_id):
         """
-        Retrieves a CSV file from GridFS, converts it back to complex64, and generates a spectrogram.
-        @param file_id: the ID of the file to retrieve.
+        Retrieves a spectrogram from GridFS and returns it as a base64 encoded image.
+        @param file_id: the ID of the spectrogram file in the database.
         @return JSON response containing the base64 encoded spectrogram image.
         """
         try:
-            # Retrieve the CSV file from GridFS
+            # Retrieve the spectrogram PNG file from GridFS
             grid_out = fs.get(ObjectId(file_id))
-            file_content = grid_out.read().decode()  # Read CSV data
+            spectrogram_content = grid_out.read()
 
-            # Convert CSV back to complex array
-            csv_reader = csv.reader(io.StringIO(file_content))
-            next(csv_reader)  # Skip header
-            iq_data = np.array([complex(float(row[0]), float(row[1])) for row in csv_reader], dtype=np.complex64)
-
-            # Generate spectrogram
-            plt.figure()
-            Pxx, freqs, bins, im = plt.specgram(iq_data, Fs=8e6, cmap='viridis')
-            plt.close()
-
-            # Convert spectrogram to base64 for frontend display
-            buf = io.BytesIO()
-            plt.imshow(10 * np.log10(Pxx.T), aspect='auto', extent=[freqs[0], freqs[-1], 0, bins[-1]], cmap='viridis')
-            plt.xlabel("Frequency [Hz]")
-            plt.ylabel("Time [s]")
-            plt.savefig(buf, format='png')
-            plt.close()
-            buf.seek(0)
-            encoded_img = base64.b64encode(buf.getvalue()).decode('utf-8')
+            # Convert to base64 for frontend display
+            encoded_img = base64.b64encode(spectrogram_content).decode('utf-8')
 
             return jsonify({'spectrogram': encoded_img})
+        
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+
 
 
     @app.route('/refresh', methods=['POST'])
