@@ -18,6 +18,7 @@ from SigMF import SigMF
 from FileData import FileData
 import csv
 import os
+import json
 
 import matplotlib
 # Use the Agg backend for Matplotlib to avoid using any X server
@@ -41,48 +42,41 @@ def create_app():
     def upload_file():
         """
         Uploads both .cfile and .sigmf-meta files, converts the cfile to CSV, 
-        generates a spectrogram, and returns the spectrogram as a base64 encoded image.
-        @return JSON response containing the base64 encoded spectrogram image.
+        generates a spectrogram, and stores everything in MongoDB.
         """
-        # Ensure both files are in the request
         if 'cfile' not in request.files or 'metaFile' not in request.files:
             return jsonify({'error': 'Both .cfile and .sigmf-meta files are required'}), 400
 
         cfile = request.files['cfile']
         metafile = request.files['metaFile']
+        original_name = cfile.filename.replace('.cfile', '')  # Remove extension
 
-        # Parse the metadata file using SigMF class
+        # Parse metadata using SigMF class
         sigmf_metadata = SigMF(metafile)
 
-        # Read and process the .cfile (assuming complex64 format)
+        # Read .cfile and convert to complex numpy array
         cfile.seek(0)
         iq_data = np.frombuffer(cfile.read(), dtype=np.complex64)
 
-        # Convert complex data into CSV format
-        csv_filename = cfile.filename.replace('.cfile', '.csv')
+        # Convert IQ data into CSV format
         csv_data = io.StringIO()
         csv_writer = csv.writer(csv_data)
         csv_writer.writerow(["Real", "Imaginary"])
-        
         for sample in iq_data:
             csv_writer.writerow([sample.real, sample.imag])
 
-        csv_data.seek(0)  # Reset the pointer
+        csv_data.seek(0)
+        print("Generated CSV")
 
-        # Save the CSV file to MongoDB
-        file_id = fs.put(csv_data.getvalue().encode(), filename=csv_filename)
-
-        # Initialize FileData object
-        file_data = FileData(raw_data_filename=cfile.filename, fft=1024, sigmf=sigmf_metadata)
-
-        print(f"CSV saved to GridFS with ID: {file_id}")
+        # Store CSV in GridFS
+        csv_file_id = fs.put(csv_data.getvalue().encode(), filename=f"{original_name}.csv")
 
         # Generate spectrogram
         plt.figure()
         Pxx, freqs, bins, im = plt.specgram(iq_data, Fs=sigmf_metadata.sample_rate, Fc=sigmf_metadata.center_frequency, cmap='viridis')
         plt.close()
 
-        # Convert spectrogram to base64 for frontend display
+        # Convert spectrogram to PNG (Binary)
         buf = io.BytesIO()
         plt.imshow(10 * np.log10(Pxx.T), aspect='auto', extent=[freqs[0], freqs[-1], bins[-1], 0], cmap='viridis')
         plt.xlabel("Frequency [Hz]")
@@ -90,85 +84,126 @@ def create_app():
         plt.savefig(buf, format='png')
         plt.close()
         buf.seek(0)
-        encoded_img = base64.b64encode(buf.getvalue()).decode('utf-8')
+        spectrogram_data = buf.getvalue()
 
-        spectrogram_id = fs.put(buf.getvalue(), filename=f"{cfile.filename}_spectrogram.png")
+        # Store spectrogram in GridFS
+        spectrogram_file_id = fs.put(spectrogram_data, filename=f"{original_name}_spectrogram.png")
 
-        print(f"Spectrogram saved to GridFS with ID: {spectrogram_id}")
+        # Create FileData object
+        file_data = FileData(raw_data_filename=cfile.filename, fft=1024, sigmf=sigmf_metadata)
 
-        return jsonify({'spectrogram': encoded_img, 'csv_id': str(file_id), 'message': 'CSV saved and spectrogram generated successfully'})
+        # Convert `SigMF` and `FileData` to JSON-serializable format
+        file_data_dict = {
+            "raw_data_filename": file_data.raw_data_filename,
+            "csv_filename": file_data.csv_filename,
+            "spectrogram_filename": file_data.spectrogram_filename,
+            "iq_plot_filename": file_data.iq_plot_filename,
+            "time_domain_filename": file_data.time_domain_filename,
+            "freq_domain_filename": file_data.freq_domain_filename,
+            "sigmf": sigmf_metadata.__dict__,  # Convert `SigMF` to a dictionary
+            "fft": file_data.fft
+        }
+
+        # Store everything in a single MongoDB document
+        document = {
+            "filename": original_name,
+            "csv_file_id": str(csv_file_id),  # Convert ObjectId to string
+            "spectrogram_file_id": str(spectrogram_file_id),  # Convert ObjectId to string
+            "metadata": sigmf_metadata.__dict__,  # Convert metadata to dictionary
+            "filedata": file_data_dict  # Store FileData as a dictionary
+        }
+
+        file_record_id = db.file_records.insert_one(document).inserted_id
+
+        print(f"Saved '{original_name}' with CSV, Spectrogram, Metadata, and FileData.")
+
+        # Return spectrogram to frontend
+        encoded_img = base64.b64encode(spectrogram_data).decode('utf-8')
+        return jsonify({'spectrogram': encoded_img, 'message': 'All files saved successfully', 'file_id': str(file_record_id)})
+
 
     @app.route('/save', methods=['POST'])
     def save_file():
         """
         Saves all related files (CSV, spectrogram, metadata, and FileData) in MongoDB under the original cfile name.
-        @return JSON response containing a success message and file ID.
         """
-        if 'csv_id' not in request.json or 'spectrogram_id' not in request.json or 'metadata' not in request.json or 'filedata' not in request.json:
-            return jsonify({'error': 'CSV ID, Spectrogram ID, Metadata, and FileData are required'}), 400
+        if 'filename' not in request.json:
+            return jsonify({'error': 'Filename is required'}), 400
 
-        csv_id = request.json['csv_id']
-        spectrogram_id = request.json['spectrogram_id']
-        metadata = request.json['metadata']  # Metadata in JSON format
-        filedata = request.json['filedata']  # Serialized FileData object in JSON format
+        filename = request.json['filename']
 
         try:
-            # Retrieve CSV file from GridFS to extract the original filename
-            csv_file = fs.get(ObjectId(csv_id))
-            original_name = csv_file.filename.split(".")[0]  # Extract base name
+            # Check if the file already exists in the database
+            existing_file = db.file_records.find_one({"filename": filename})
 
-            # Combine everything into a single database document
-            file_entry = {
-                "filename": original_name,
-                "csv_id": csv_id,
-                "spectrogram_id": spectrogram_id,
-                "metadata": metadata,
-                "filedata": filedata  # Store FileData object
+            if existing_file:
+                return jsonify({'message': 'File already saved', 'file_id': str(existing_file["_id"])})
+
+            # Retrieve CSV and Spectrogram IDs from GridFS
+            csv_file = fs.find_one({"filename": f"{filename}.csv"})
+            spectrogram_file = fs.find_one({"filename": f"{filename}_spectrogram.png"})
+
+            if not csv_file or not spectrogram_file:
+                return jsonify({'error': 'Associated CSV or Spectrogram not found'}), 404
+
+            # Retrieve metadata and FileData from uploaded data
+            file_entry = db.file_records.find_one({"filename": filename}, {"metadata": 1, "filedata": 1})
+
+            if not file_entry:
+                return jsonify({'error': 'Metadata and FileData not found'}), 404
+
+            # Ensure correct ObjectId storage
+            document = {
+                "filename": filename,
+                "csv_file_id": str(csv_file._id),  # Ensure it's stored as a string
+                "spectrogram_file_id": str(spectrogram_file._id),  # Ensure it's stored as a string
+                "metadata": file_entry["metadata"],
+                "filedata": file_entry["filedata"]
             }
 
-            # Insert into MongoDB as a document
-            saved_file_id = db.file_records.insert_one(file_entry).inserted_id
+            file_record_id = db.file_records.insert_one(document).inserted_id
+            print(f"File '{filename}' saved with ID {file_record_id}")
 
-            print(f"File '{original_name}' saved with ID {saved_file_id}")
-
-            return jsonify({'message': 'All related files saved successfully', 'file_id': str(saved_file_id)})
+            return jsonify({'message': 'All related files saved successfully', 'file_id': str(file_record_id)})
 
         except Exception as e:
             print("Error saving files:", e)
             return jsonify({'error': str(e)}), 500
 
-
     @app.route('/files', methods=['GET'])
     def get_files():
         """
-        Lists all files saved in GridFS.
-        @return JSON response containing a list of files with their IDs and filenames.
+        Lists all stored filenames.
         """
         try:
-            # List all files saved in GridFS
-            files = list(fs.find())
-            files_list = [{"_id": str(f._id), "filename": f.filename} for f in files]
-            return jsonify({"files": files_list})
+            files = db.file_records.find({}, {"filename": 1})  # Ensure fetching filenames
+            file_list = [{"_id": str(file["_id"]), "filename": file["filename"]} for file in files]
+            return jsonify({"files": file_list})  # ✅ Correct JSON format
+
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
     @app.route('/file/<file_id>/spectrogram', methods=['GET'])
     def get_file_spectrogram(file_id):
         """
-        Retrieves a spectrogram from GridFS and returns it as a base64 encoded image.
-        @param file_id: the ID of the spectrogram file in the database.
-        @return JSON response containing the base64 encoded spectrogram image.
+        Retrieves a spectrogram PNG from GridFS using the saved file ID.
         """
         try:
-            # Retrieve the spectrogram PNG file from GridFS
-            grid_out = fs.get(ObjectId(file_id))
-            spectrogram_content = grid_out.read()
+            if not ObjectId.is_valid(file_id):
+                return jsonify({'error': 'Invalid file ID format'}), 400  # Prevent invalid ObjectId error
 
-            # Convert to base64 for frontend display
-            encoded_img = base64.b64encode(spectrogram_content).decode('utf-8')
+            file_record = db.file_records.find_one({"_id": ObjectId(file_id)})
+            if not file_record:
+                return jsonify({'error': 'File not found'}), 404
 
+            # Fetch spectrogram PNG from GridFS
+            spectrogram_file = fs.get(ObjectId(file_record['spectrogram_file_id']))
+            spectrogram_data = spectrogram_file.read()
+
+            # Convert to base64
+            encoded_img = base64.b64encode(spectrogram_data).decode('utf-8')
             return jsonify({'spectrogram': encoded_img})
-        
+
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
@@ -177,21 +212,24 @@ def create_app():
     @app.route('/refresh', methods=['POST'])
     def refresh_files():
         """
-        Clears all files from GridFS.
-        This endpoint can be triggered by a "refresh" button on the client side.
-        @return JSON response containing a success message.
+        Clears all saved files.
         """
         try:
-            # Iterate over all files in GridFS and delete each one
-            for grid_out in fs.find():
-                fs.delete(grid_out._id)
-            print("All files have been cleared from the database.")
-            return jsonify({'message': 'All files have been cleared from the database.'})
+            # Delete all records from the collection
+            db.file_records.delete_many({})
+            # Delete all files from GridFS
+            for file in fs.find():
+                fs.delete(file._id)
+
+            print("All files cleared from the database.")
+            return jsonify({'message': 'All files have been cleared.'})
+
         except Exception as e:
             print("Error clearing files:", e)
             return jsonify({'error': str(e)}), 500
-
+        
     return app
+
 
 if __name__ == '__main__':
     app = create_app()

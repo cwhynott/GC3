@@ -119,28 +119,48 @@ function FileHandle() {
 
   // Handle loading a saved file
   const handleLoadFile = async (fileId: string) => {
-    setStatusMessage('Loading file...');
-    try {
-      const response = await fetch(`http://127.0.0.1:5000/file/${fileId}/spectrogram`);
-      const result = await response.json();
-      if (result.error) return setStatusMessage(`Error: ${result.error}`);
-      setSpectrogram(result.spectrogram);
-      setStatusMessage('File loaded successfully.');
-    } catch (error) {
-      setStatusMessage('Failed to load file.');
-    }
+      if (!fileId) {
+          setStatusMessage('Error: File ID is undefined.');
+          return;
+      }
+
+      setStatusMessage('Loading file...');
+      try {
+          const response = await fetch(`http://127.0.0.1:5000/file/${fileId}/spectrogram`);
+          const result = await response.json();
+
+          if (result.error) {
+              setStatusMessage(`Error: ${result.error}`);
+              return;
+          }
+
+          setSpectrogram(result.spectrogram);
+          setStatusMessage('File loaded successfully.');
+      } catch (error) {
+          setStatusMessage('Failed to load file.');
+      }
   };
+
 
   // Fetch saved files from the database
   const fetchSavedFiles = async () => {
-    try {
-      const response = await fetch('http://127.0.0.1:5000/files');
-      const result = await response.json();
-      setSavedFiles(result.files);
-    } catch (error) {
-      setStatusMessage('');
-    }
-  };
+      try {
+        const response = await fetch('http://127.0.0.1:5000/files');
+        const result = await response.json();
+    
+        console.log("Fetched files:", result); // ✅ Debugging log
+    
+        if (result.files) {
+          setSavedFiles(result.files);
+        } else {
+          setSavedFiles([]);  // Ensure it's an empty array if there's an error
+        }
+      } catch (error) {
+        console.error("Error fetching saved files:", error);
+        setStatusMessage('Error fetching saved files');
+      }
+    };
+  
 
   // Fetch saved files on component mount
   useEffect(() => {
@@ -192,12 +212,16 @@ function FileHandle() {
       <div className="saved-files">
         <h2 style={{ color: '#2c3e50' }}>Saved Files</h2>
         <ul className="file-list">
-          {savedFiles.map(file => (
-            <li key={file._id} className="file-item">
-              {file.filename}
-              <button onClick={() => handleLoadFile(file._id)} className="btn load-btn">Load</button>
-            </li>
-          ))}
+          {savedFiles.length > 0 ? (
+            savedFiles.map(file => (
+              <li key={file._id} className="file-item">
+                {file.filename}
+                <button onClick={() => handleLoadFile(file._id)} className="btn load-btn">Load</button>
+              </li>
+            ))
+          ) : (
+            <li className="no-files">No files saved.</li>
+          )}
         </ul>
       </div>
     </main>
