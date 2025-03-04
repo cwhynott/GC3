@@ -42,7 +42,8 @@ def create_app():
     def upload_file():
         """
         Uploads both .cfile and .sigmf-meta files, converts the cfile to CSV, 
-        generates a spectrogram, and stores everything in MongoDB.
+        generates a spectrogram, IQ plot, time-domain plot, and frequency-domain plot.
+        Stores everything in MongoDB, but only visualizes the spectrogram.
         """
         if 'cfile' not in request.files or 'metaFile' not in request.files:
             return jsonify({'error': 'Both .cfile and .sigmf-meta files are required'}), 400
@@ -71,11 +72,56 @@ def create_app():
         # Store CSV in GridFS
         csv_file_id = fs.put(csv_data.getvalue().encode(), filename=f"{original_name}.csv")
 
-        # Generate spectrogram
-        plt.figure()
+        # --- Generate and Store Plots Individually ---
+        
+        # **Time Domain Plot**
+        plt.figure(figsize=(8, 4))
+        time_axis = np.arange(len(iq_data)) / sigmf_metadata.sample_rate
+        plt.plot(time_axis[:1000], iq_data[:1000].real, label="Real")
+        plt.plot(time_axis[:1000], iq_data[:1000].imag, label="Imaginary", linestyle='dashed')
+        plt.title("Time Domain Signal")
+        plt.xlabel("Time [s]")
+        plt.ylabel("Amplitude")
+        plt.legend()
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+        time_domain_file_id = fs.put(buf.getvalue(), filename=f"{original_name}_time_domain.png")
+        print("Created Time Domain")
+
+        # **Frequency Domain Plot (FFT)**
+        plt.figure(figsize=(8, 4))
+        fft_spectrum = np.fft.fftshift(np.fft.fft(iq_data))
+        freq_axis = np.fft.fftshift(np.fft.fftfreq(len(iq_data), 1 / sigmf_metadata.sample_rate))
+        plt.plot(freq_axis, 20 * np.log10(np.abs(fft_spectrum)), color='red')
+        plt.title("Frequency Domain (FFT)")
+        plt.xlabel("Frequency [Hz]")
+        plt.ylabel("Power [dB]")
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+        freq_domain_file_id = fs.put(buf.getvalue(), filename=f"{original_name}_freq_domain.png")
+        print("Created Frequency Domain")
+
+        # **IQ Plot (Constellation Diagram)**
+        plt.figure(figsize=(6, 6))
+        plt.scatter(iq_data[:5000].real, iq_data[:5000].imag, alpha=0.5, s=2)
+        plt.title("IQ Plot (Constellation Diagram)")
+        plt.xlabel("In-phase")
+        plt.ylabel("Quadrature")
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+        iq_plot_file_id = fs.put(buf.getvalue(), filename=f"{original_name}_iq_plot.png")
+        print("Created IQ Plot")
+
+        # **Spectrogram (Visualized in Response)**
+        plt.figure(figsize=(10, 6))
         Pxx, freqs, bins, im = plt.specgram(iq_data, Fs=sigmf_metadata.sample_rate, Fc=sigmf_metadata.center_frequency, cmap='viridis')
         plt.close()
-
         # Convert spectrogram to PNG (Binary)
         buf = io.BytesIO()
         plt.imshow(10 * np.log10(Pxx.T), aspect='auto', extent=[freqs[0], freqs[-1], bins[-1], 0], cmap='viridis')
@@ -85,14 +131,11 @@ def create_app():
         plt.close()
         buf.seek(0)
         spectrogram_data = buf.getvalue()
-
-        # Store spectrogram in GridFS
         spectrogram_file_id = fs.put(spectrogram_data, filename=f"{original_name}_spectrogram.png")
+        print("Created Spectrogram")
 
-        # Create FileData object
+        # Store metadata
         file_data = FileData(raw_data_filename=cfile.filename, fft=1024, sigmf=sigmf_metadata)
-
-        # Convert `SigMF` and `FileData` to JSON-serializable format
         file_data_dict = {
             "raw_data_filename": file_data.raw_data_filename,
             "csv_filename": file_data.csv_filename,
@@ -100,26 +143,32 @@ def create_app():
             "iq_plot_filename": file_data.iq_plot_filename,
             "time_domain_filename": file_data.time_domain_filename,
             "freq_domain_filename": file_data.freq_domain_filename,
-            "sigmf": sigmf_metadata.__dict__,  # Convert `SigMF` to a dictionary
+            "sigmf": sigmf_metadata.__dict__,
             "fft": file_data.fft
         }
 
-        # Store everything in a single MongoDB document
         document = {
             "filename": original_name,
-            "csv_file_id": str(csv_file_id),  # Convert ObjectId to string
-            "spectrogram_file_id": str(spectrogram_file_id),  # Convert ObjectId to string
-            "metadata": sigmf_metadata.__dict__,  # Convert metadata to dictionary
-            "filedata": file_data_dict  # Store FileData as a dictionary
+            "csv_file_id": str(csv_file_id),
+            "spectrogram_file_id": str(spectrogram_file_id),
+            "iq_plot_file_id": str(iq_plot_file_id),
+            "time_domain_file_id": str(time_domain_file_id),
+            "freq_domain_file_id": str(freq_domain_file_id),
+            "metadata": sigmf_metadata.__dict__,
+            "filedata": file_data_dict
         }
 
         file_record_id = db.file_records.insert_one(document).inserted_id
 
         print(f"Saved '{original_name}' with CSV, Spectrogram, Metadata, and FileData.")
 
-        # Return spectrogram to frontend
+        # Return **only** the spectrogram image to the frontend
         encoded_img = base64.b64encode(spectrogram_data).decode('utf-8')
-        return jsonify({'spectrogram': encoded_img, 'message': 'All files saved successfully', 'file_id': str(file_record_id)})
+        return jsonify({
+            'spectrogram': encoded_img,
+            'message': 'All files uploaded successfully',
+            'file_id': str(file_record_id)
+        })
 
 
     @app.route('/save', methods=['POST'])
@@ -227,7 +276,8 @@ def create_app():
         except Exception as e:
             print("Error clearing files:", e)
             return jsonify({'error': str(e)}), 500
-        
+
+
     return app
 
 
