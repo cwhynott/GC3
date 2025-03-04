@@ -137,7 +137,6 @@ def create_app():
         # Store Pxx CSV in GridFS
         pxx_csv_file_id = fs.put(pxx_csv_data.getvalue().encode(), filename=f"{original_name}_pxx.csv")
 
-
         # Store metadata
         file_data = FileData(raw_data_filename=cfile.filename, fft=1024, sigmf=sigmf_metadata)
         file_data_dict = {

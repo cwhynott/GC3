@@ -266,8 +266,6 @@ function FileHandle() {
         </div>
       </div>
 
-
-
       {/* File Actions - Centered horizontally */}
       <div className="file-actions">
         <button onClick={handleUpload} className="btn upload-btn" disabled={!selectedCFile || !selectedMetaFile}>
@@ -286,6 +284,7 @@ function FileHandle() {
               </button>
             ))}
           </div>
+        
       
         {/* Display Selected Plot */}
         {plotImages[activeTab] ? (

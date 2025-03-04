@@ -7,7 +7,6 @@
 
 import { useState, useRef } from 'react';
 import './App.css';
-import './EnhancedApp.css';
 import DisplayTabs from './components/Tabs';
 
 function App() {
