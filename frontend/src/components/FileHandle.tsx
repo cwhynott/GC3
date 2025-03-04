@@ -257,7 +257,7 @@ function FileHandle() {
           <input
             id="meta-upload"
             type="file"
-            accept=".sigmf-meta"
+            accept=".sigmf-meta, .sigmf, .sigmf-data"
             onChange={handleMetaFileChange}
             className="file-input"
             disabled={!selectedCFile} // Prevent selection before CFile

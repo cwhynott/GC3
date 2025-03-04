@@ -59,19 +59,6 @@ def create_app():
         cfile.seek(0)
         iq_data = np.frombuffer(cfile.read(), dtype=np.complex64)
 
-        # Convert IQ data into CSV format
-        csv_data = io.StringIO()
-        csv_writer = csv.writer(csv_data)
-        csv_writer.writerow(["Real", "Imaginary"])
-        for sample in iq_data:
-            csv_writer.writerow([sample.real, sample.imag])
-
-        csv_data.seek(0)
-        print("Generated CSV")
-
-        # Store CSV in GridFS
-        csv_file_id = fs.put(csv_data.getvalue().encode(), filename=f"{original_name}.csv")
-
         # --- Generate and Store Plots Individually ---
         
         # **Time Domain Plot**
@@ -132,12 +119,30 @@ def create_app():
         spectrogram_data = buf.getvalue()
         spectrogram_file_id = fs.put(spectrogram_data, filename=f"{original_name}_spectrogram.png")
         print("Created Spectrogram")
+        
+        # **Save Pxx as CSV**
+        pxx_csv_data = io.StringIO()
+        csv_writer = csv.writer(pxx_csv_data)
+        
+        # Write Header Row: Time Bins
+        csv_writer.writerow(["Frequency (Hz)"] + bins.tolist())
+
+        # Write Pxx Values (Each Row is a Frequency Bin)
+        for i, freq in enumerate(freqs):
+            csv_writer.writerow([freq] + Pxx[i].tolist())
+
+        pxx_csv_data.seek(0)
+        print("Generated Pxx CSV")
+
+        # Store Pxx CSV in GridFS
+        pxx_csv_file_id = fs.put(pxx_csv_data.getvalue().encode(), filename=f"{original_name}_pxx.csv")
+
 
         # Store metadata
         file_data = FileData(raw_data_filename=cfile.filename, fft=1024, sigmf=sigmf_metadata)
         file_data_dict = {
             "raw_data_filename": file_data.raw_data_filename,
-            "csv_filename": file_data.csv_filename,
+            "pxx_csv_filename": f"{original_name}_pxx.csv",
             "spectrogram_filename": file_data.spectrogram_filename,
             "iq_plot_filename": file_data.iq_plot_filename,
             "time_domain_filename": file_data.time_domain_filename,
@@ -148,7 +153,7 @@ def create_app():
 
         document = {
             "filename": original_name,
-            "csv_file_id": str(csv_file_id),
+            "csv_file_id": str(pxx_csv_file_id),
             "spectrogram_file_id": str(spectrogram_file_id),
             "iq_plot_file_id": str(iq_plot_file_id),
             "time_domain_file_id": str(time_domain_file_id),
@@ -163,9 +168,6 @@ def create_app():
 
         # Encode spectrogram to base64
         encoded_spectrogram = base64.b64encode(spectrogram_data).decode('utf-8')
-
-        # Debugging - Check the response contains the spectrogram
-        print(f"Spectrogram Base64 (First 100 chars): {encoded_spectrogram[:100]}")
 
         return jsonify({
             'spectrogram': encoded_spectrogram,  # ✅ Ensure spectrogram is included
