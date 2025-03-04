@@ -119,9 +119,8 @@ def create_app():
         print("Created IQ Plot")
 
         # **Spectrogram (Visualized in Response)**
-        plt.figure(figsize=(10, 6))
+        plt.figure()
         Pxx, freqs, bins, im = plt.specgram(iq_data, Fs=sigmf_metadata.sample_rate, Fc=sigmf_metadata.center_frequency, cmap='viridis')
-        plt.close()
         # Convert spectrogram to PNG (Binary)
         buf = io.BytesIO()
         plt.imshow(10 * np.log10(Pxx.T), aspect='auto', extent=[freqs[0], freqs[-1], bins[-1], 0], cmap='viridis')
@@ -162,13 +161,18 @@ def create_app():
 
         print(f"Saved '{original_name}' with CSV, Spectrogram, Metadata, and FileData.")
 
-        # Return **only** the spectrogram image to the frontend
-        encoded_img = base64.b64encode(spectrogram_data).decode('utf-8')
+        # Encode spectrogram to base64
+        encoded_spectrogram = base64.b64encode(spectrogram_data).decode('utf-8')
+
+        # Debugging - Check the response contains the spectrogram
+        print(f"Spectrogram Base64 (First 100 chars): {encoded_spectrogram[:100]}")
+
         return jsonify({
-            'spectrogram': encoded_img,
-            'message': 'All files uploaded successfully',
-            'file_id': str(file_record_id)
+            'spectrogram': encoded_spectrogram,  # ✅ Ensure spectrogram is included
+            'file_id': str(file_record_id),
+            'message': 'All files uploaded successfully'
         })
+
 
 
     @app.route('/save', methods=['POST'])
@@ -225,33 +229,51 @@ def create_app():
         Lists all stored filenames.
         """
         try:
-            files = db.file_records.find({}, {"filename": 1})  # Ensure fetching filenames
+            files = list(db.file_records.find({}, {"filename": 1}))  # Convert cursor to a list
+
+            # Debugging - Print retrieved files
+            print("Fetched Files from DB:", files)
+
+            if not files:
+                print("No files found in the database.")
+
             file_list = [{"_id": str(file["_id"]), "filename": file["filename"]} for file in files]
-            return jsonify({"files": file_list})  # ✅ Correct JSON format
+            
+            return jsonify({"files": file_list})  # ✅ Ensure correct JSON format
 
         except Exception as e:
+            print("Error fetching saved files:", e)
             return jsonify({'error': str(e)}), 500
+
 
     @app.route('/file/<file_id>/spectrogram', methods=['GET'])
     def get_file_spectrogram(file_id):
         """
-        Retrieves a spectrogram PNG from GridFS using the saved file ID.
+        Retrieves the spectrogram PNG from GridFS using the saved file ID.
         """
         try:
             if not ObjectId.is_valid(file_id):
-                return jsonify({'error': 'Invalid file ID format'}), 400  # Prevent invalid ObjectId error
+                return jsonify({'error': 'Invalid file ID format'}), 400  
 
             file_record = db.file_records.find_one({"_id": ObjectId(file_id)})
             if not file_record:
                 return jsonify({'error': 'File not found'}), 404
 
-            # Fetch spectrogram PNG from GridFS
-            spectrogram_file = fs.get(ObjectId(file_record['spectrogram_file_id']))
+            spectrogram_file_id = file_record.get("spectrogram_file_id")
+            if not spectrogram_file_id:
+                return jsonify({'error': 'Spectrogram file not found'}), 404
+
+            # Fetch from GridFS
+            spectrogram_file = fs.get(ObjectId(spectrogram_file_id))
             spectrogram_data = spectrogram_file.read()
 
-            # Convert to base64
+            # Encode spectrogram to base64
             encoded_img = base64.b64encode(spectrogram_data).decode('utf-8')
-            return jsonify({'spectrogram': encoded_img})
+
+            # Debugging print
+            print(f"Fetched Spectrogram (First 100 chars): {encoded_img[:100]}")
+
+            return jsonify({'image': encoded_img})
 
         except Exception as e:
             return jsonify({'error': str(e)}), 500
@@ -261,20 +283,56 @@ def create_app():
     @app.route('/refresh', methods=['POST'])
     def refresh_files():
         """
-        Clears all saved files.
+        Clears all saved files and associated metadata from the database.
         """
         try:
             # Delete all records from the collection
-            db.file_records.delete_many({})
+            delete_result = db.file_records.delete_many({})
+            print(f"Deleted {delete_result.deleted_count} records from file_records.")
+
             # Delete all files from GridFS
+            files_deleted = 0
             for file in fs.find():
                 fs.delete(file._id)
+                files_deleted += 1
+            print(f"Deleted {files_deleted} files from GridFS.")
 
-            print("All files cleared from the database.")
+            print("All files cleared from the database and GridFS.")
             return jsonify({'message': 'All files have been cleared.'})
 
         except Exception as e:
             print("Error clearing files:", e)
+            return jsonify({'error': str(e)}), 500
+
+        
+        
+    @app.route('/file/<file_id>/<plot_type>', methods=['GET'])
+    def get_file_plot(file_id, plot_type):
+        """
+        Retrieves a requested plot (spectrogram, time domain, frequency domain, or IQ plot) from GridFS.
+        """
+        try:
+            if not ObjectId.is_valid(file_id):
+                return jsonify({'error': 'Invalid file ID format'}), 400  
+
+            file_record = db.file_records.find_one({"_id": ObjectId(file_id)})
+            if not file_record:
+                return jsonify({'error': 'File not found'}), 404
+
+            # Map plot type to the correct GridFS file ID
+            plot_file_id = file_record.get(f"{plot_type}_file_id")
+            if not plot_file_id:
+                return jsonify({'error': f'{plot_type} file not found'}), 404
+
+            # Fetch from GridFS
+            plot_file = fs.get(ObjectId(plot_file_id))
+            plot_data = plot_file.read()
+
+            # Convert to base64 and return it
+            encoded_img = base64.b64encode(plot_data).decode('utf-8')
+            return jsonify({'image': encoded_img})
+
+        except Exception as e:
             return jsonify({'error': str(e)}), 500
 
 

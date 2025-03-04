@@ -10,11 +10,21 @@ function FileHandle() {
   // State variables
   const [selectedCFile, setSelectedCFile] = useState<File | null>(null);
   const [selectedMetaFile, setSelectedMetaFile] = useState<File | null>(null);
-  const [spectrogram, setSpectrogram] = useState<string | null>(null);
   const [savedFiles, setSavedFiles] = useState<SavedFile[]>([]);
   const [statusMessage, setStatusMessage] = useState<string>('Please upload a .cfile and .sigmf-meta');
   const [selectedCFileName, setSelectedCFileName] = useState<string | null>(null);
   const [selectedMetaFileName, setSelectedMetaFileName] = useState<string | null>(null);
+  const [fileId, setFileId] = useState<string | null>(null);
+  
+
+  // State for tab switching
+  const [activeTab, setActiveTab] = useState<string>('spectrogram');
+  const [plotImages, setPlotImages] = useState<{ [key: string]: string | null }>({
+    spectrogram: null,
+    time_domain: null,
+    freq_domain: null,
+    iq_plot: null,
+  });
 
   // Handle .cfile selection
   const handleCFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -71,16 +81,57 @@ function FileHandle() {
       const response = await fetch('http://127.0.0.1:5000/upload', { method: 'POST', body: formData });
       const result = await response.json();
   
-      console.log("Backend response:", result); // ✅ Debugging log
-  
       if (result.error) return setStatusMessage(`Error: ${result.error}`);
   
-      setSpectrogram(result.spectrogram);
+      console.log("Upload Response:", result); // ✅ Debugging log
+  
+      setFileId(result.file_id);
+  
+      // ✅ Immediately set spectrogram image
+      if (result.spectrogram) {
+        setPlotImages((prevImages) => ({ ...prevImages, spectrogram: result.spectrogram }));
+        setActiveTab('spectrogram'); // ✅ Ensure spectrogram is shown first
+      }
+  
+      fetchPlots(result.file_id);
       setStatusMessage(result.message);
     } catch (error) {
       setStatusMessage('Upload failed. Please try again.');
     }
   };
+  
+
+  // Fetch and store images dynamically
+  const fetchPlots = async (fileId: string) => {
+    const plotTypes = ['spectrogram', 'time_domain', 'freq_domain', 'iq_plot'];
+  
+    for (const plot of plotTypes) {
+      try {
+        console.log(`Fetching ${plot}...`); // ✅ Debugging log
+  
+        const response = await fetch(`http://127.0.0.1:5000/file/${fileId}/${plot}`);
+        const result = await response.json();
+  
+        if (result.error) {
+          console.error(`Error fetching ${plot}:`, result.error);
+          continue;
+        }
+  
+        console.log(`Fetched ${plot}: ✅ Success`); // ✅ Debugging log
+  
+        // Ensure the spectrogram is set first
+        setPlotImages((prevImages) => ({ ...prevImages, [plot]: result.image }));
+  
+        if (plot === 'spectrogram') {
+          setActiveTab('spectrogram');  // ✅ Ensure spectrogram is shown first
+        }
+  
+      } catch (error) {
+        console.error(`Error fetching ${plot}:`, error);
+      }
+    }
+  };
+  
   
 
   // Handle file save to database
@@ -105,61 +156,69 @@ function FileHandle() {
   };
 
 
-  // Handle clearing all saved files
   const handleClearFiles = async () => {
     setStatusMessage('Clearing all saved files...');
     try {
-      await fetch('http://127.0.0.1:5000/refresh', { method: 'POST' });
-      fetchSavedFiles();
-      setStatusMessage('All saved files cleared.');
+      const response = await fetch('http://127.0.0.1:5000/refresh', { method: 'POST' });
+  
+      if (!response.ok) {
+        throw new Error('Failed to clear files from backend.');
+      }
+  
+      const result = await response.json();
+      console.log("Clear response:", result); // ✅ Debugging log
+  
+      // Delay to ensure backend clears before fetching updated list
+      setTimeout(() => {
+        fetchSavedFiles();
+        setStatusMessage('All saved files cleared.');
+      }, 500); // Adjust delay if necessary
+  
     } catch (error) {
+      console.error("Error clearing files:", error);
       setStatusMessage('Failed to clear saved files.');
     }
   };
+  
 
   // Handle loading a saved file
   const handleLoadFile = async (fileId: string) => {
-      if (!fileId) {
-          setStatusMessage('Error: File ID is undefined.');
-          return;
-      }
-
-      setStatusMessage('Loading file...');
-      try {
-          const response = await fetch(`http://127.0.0.1:5000/file/${fileId}/spectrogram`);
-          const result = await response.json();
-
-          if (result.error) {
-              setStatusMessage(`Error: ${result.error}`);
-              return;
-          }
-
-          setSpectrogram(result.spectrogram);
-          setStatusMessage('File loaded successfully.');
-      } catch (error) {
-          setStatusMessage('Failed to load file.');
-      }
-  };
+    setFileId(fileId);
+    setActiveTab('spectrogram');  // ✅ Ensure spectrogram is shown first
+    setStatusMessage('Loading file...');
+    fetchPlots(fileId);
+    setStatusMessage('Files loaded successfully');
+  };  
 
 
   // Fetch saved files from the database
   const fetchSavedFiles = async () => {
-      try {
-        const response = await fetch('http://127.0.0.1:5000/files');
-        const result = await response.json();
-    
-        console.log("Fetched files:", result); // ✅ Debugging log
-    
-        if (result.files) {
-          setSavedFiles(result.files);
-        } else {
-          setSavedFiles([]);  // Ensure it's an empty array if there's an error
-        }
-      } catch (error) {
-        console.error("Error fetching saved files:", error);
-        setStatusMessage('Error fetching saved files');
+    try {
+      console.log("Fetching saved files..."); // ✅ Debugging log
+  
+      const response = await fetch('http://127.0.0.1:5000/files');
+      const result = await response.json();
+  
+      if (result.error) {
+        console.error("Error fetching saved files:", result.error);
+        setStatusMessage(`Error: ${result.error}`);
+        return;
       }
-    };
+  
+      console.log("Fetched saved files:", result.files); // ✅ Debugging log
+  
+      if (Array.isArray(result.files)) {
+        setSavedFiles(result.files);
+      } else {
+        console.error("Unexpected response format:", result);
+        setSavedFiles([]);
+      }
+    } catch (error) {
+      console.error("Error fetching saved files:", error);
+      setStatusMessage('Error fetching saved files');
+    }
+  };
+  
   
 
   // Fetch saved files on component mount
@@ -204,23 +263,39 @@ function FileHandle() {
         <button onClick={handleSave} className="btn save-btn">Save to Database</button>
         <button onClick={handleClearFiles} className="btn clear-btn">Clear All Saved Files</button>
       </div>
-
-      {/* Display Spectrogram */}
-      {spectrogram && <img src={`data:image/png;base64,${spectrogram}`} alt="Spectrogram" className="spectrogram-img" />}
+      {/* Tabbed Interface for Plots */}
+      {fileId && (
+        <div className="plot-container">
+          <div className="tabs">
+            {['spectrogram', 'time_domain', 'freq_domain', 'iq_plot'].map((tab) => (
+              <button key={tab} className={activeTab === tab ? 'active' : ''} onClick={() => setActiveTab(tab)}>
+                {tab.replace('_', ' ').toUpperCase()}
+              </button>
+            ))}
+          </div>
+      
+        {/* Display Selected Plot */}
+        {plotImages[activeTab] ? (
+          <img src={`data:image/png;base64,${plotImages[activeTab]}`} alt={activeTab} className="plot-image" />
+        ) : (
+          <p className="status-banner">Loading {activeTab}...</p>
+        )}
+        </div>
+      )}
 
       {/* Saved Files Section */}
       <div className="saved-files">
         <h2 style={{ color: '#2c3e50' }}>Saved Files</h2>
-        <ul className="file-list">
+        <ul>
           {savedFiles.length > 0 ? (
-            savedFiles.map(file => (
-              <li key={file._id} className="file-item">
+            savedFiles.map((file) => (
+              <li key={file._id}>
                 {file.filename}
-                <button onClick={() => handleLoadFile(file._id)} className="btn load-btn">Load</button>
+                <button onClick={() => handleLoadFile(file._id)}>Load</button>
               </li>
             ))
           ) : (
-            <li className="no-files">No files saved.</li>
+            <li>No files saved.</li>
           )}
         </ul>
       </div>
