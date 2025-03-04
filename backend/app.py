@@ -106,7 +106,7 @@ def create_app():
         print("Created Frequency Domain")
 
         # **IQ Plot (Constellation Diagram)**
-        plt.figure(figsize=(6, 6))
+        plt.figure(figsize=(8, 8))
         plt.scatter(iq_data[:5000].real, iq_data[:5000].imag, alpha=0.5, s=2)
         plt.title("IQ Plot (Constellation Diagram)")
         plt.xlabel("In-phase")

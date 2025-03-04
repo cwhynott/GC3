@@ -40,6 +40,7 @@ function FileHandle() {
 
     setSelectedCFile(file);
     setSelectedCFileName(file.name);
+    
     setStatusMessage('Now select and upload a corresponding .sigmf-meta file.');
   };
 
@@ -233,27 +234,39 @@ function FileHandle() {
 
       {/* File Selection - Stacked vertically */}
       <div className="file-selection">
+        {/* Custom Button for CFile */}
         <div className="file-row">
-          <input 
-            type="file" 
-            accept=".cfile" 
-            onChange={handleCFileChange} 
-            className="file-input" 
+          <label htmlFor="cfile-upload" className="custom-file-upload">
+            Choose CFile
+          </label>
+          <input
+            id="cfile-upload"
+            type="file"
+            accept=".cfile"
+            onChange={handleCFileChange}
+            className="file-input"
           />
-          {selectedCFileName && <span className="selected-file">{selectedCFileName}</span>}
+          {selectedCFileName && <span className="file-name">{selectedCFileName}</span>}
         </div>
 
+        {/* Custom Button for Metadata File */}
         <div className="file-row">
-          <input 
-            type="file" 
-            accept=".sigmf-meta" 
-            onChange={handleMetaFileChange} 
-            className="file-input" 
-            disabled={!selectedCFile} 
+          <label htmlFor="meta-upload" className="custom-file-upload">
+            Choose SIGMF
+          </label>
+          <input
+            id="meta-upload"
+            type="file"
+            accept=".sigmf-meta"
+            onChange={handleMetaFileChange}
+            className="file-input"
+            disabled={!selectedCFile} // Prevent selection before CFile
           />
-          {selectedMetaFileName && <span className="selected-file">{selectedMetaFileName}</span>}
+          {selectedMetaFileName && <span className="file-name">{selectedMetaFileName}</span>}
         </div>
       </div>
+
+
 
       {/* File Actions - Centered horizontally */}
       <div className="file-actions">
@@ -290,7 +303,7 @@ function FileHandle() {
           {savedFiles.length > 0 ? (
             savedFiles.map((file) => (
               <li key={file._id}>
-                {file.filename}
+                <span className="file-name">{file.filename}</span> {/* ✅ Ensures filename uses updated styles */}
                 <button onClick={() => handleLoadFile(file._id)}>Load</button>
               </li>
             ))
