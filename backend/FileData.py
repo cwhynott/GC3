@@ -29,8 +29,3 @@ class FileData:
         # Additional metadata
         self.sigmf = sigmf_metadata.__dict__
         self.fft = fft
-
-def create_metadata_document(original_name, sigmf_metadata, pxx_csv_file_id, plot_ids):
-    """Creates and returns a FileData object instead of a dictionary."""
-    return FileData(original_name, sigmf_metadata, pxx_csv_file_id, plot_ids)
-
