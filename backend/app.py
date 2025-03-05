@@ -63,7 +63,7 @@ def create_app():
         return jsonify({
             'spectrogram': encoded_spectrogram,
             'file_id': str(file_record_id),
-            'message': 'All files uploaded successfully'
+            'message': 'All files uploaded and saved successfully'
         })
 
     def generate_plots(original_name, iq_data, sigmf_metadata):
@@ -99,8 +99,6 @@ def create_app():
 
         return plots, Pxx, freqs, bins
 
-
-
     def save_plot(fig, filename):
         """Saves a given Matplotlib figure to GridFS."""
         buf = io.BytesIO()
@@ -108,7 +106,6 @@ def create_app():
         plt.close(fig)
         buf.seek(0)
         return fs.put(buf.getvalue(), filename=filename)
-
 
     def plot_time_domain(iq_data, sigmf_metadata):
         """Generates the time-domain plot."""
@@ -160,7 +157,6 @@ def create_app():
         ax.set_title("Spectrogram")
         return fig, Pxx, freqs, bins
 
-
     def save_pxx_csv(original_name, Pxx, freqs, bins):
         """Saves the Pxx matrix as a CSV in GridFS."""
         pxx_csv_data = io.StringIO()
@@ -172,32 +168,6 @@ def create_app():
 
         pxx_csv_data.seek(0)
         return fs.put(pxx_csv_data.getvalue().encode(), filename=f"{original_name}_pxx.csv")
-
-    @app.route('/save', methods=['POST'])
-    def save_file():
-        """Saves a file entry if it does not already exist."""
-        filename = request.json.get('filename')
-        if not filename:
-            return jsonify({'error': 'Filename is required'}), 400
-
-        existing_file = db.file_records.find_one({"filename": filename})
-        if existing_file:
-            return jsonify({'message': 'File already saved', 'file_id': str(existing_file["_id"])})
-
-        file_entry = db.file_records.find_one({"filename": filename}, {"metadata": 1, "filedata": 1})
-        if not file_entry:
-            return jsonify({'error': 'Metadata and FileData not found'}), 404
-
-        document = {
-            "filename": filename,
-            "csv_file_id": str(file_entry["filedata"]["pxx_csv_filename"]),
-            "spectrogram_file_id": str(file_entry["filedata"]["spectrogram_filename"]),
-            "metadata": file_entry["metadata"],
-            "filedata": file_entry["filedata"]
-        }
-
-        file_record_id = db.file_records.insert_one(document).inserted_id
-        return jsonify({'message': 'All related files saved successfully', 'file_id': str(file_record_id)})
 
     @app.route('/files', methods=['GET'])
     def get_files():

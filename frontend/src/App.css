@@ -347,6 +347,12 @@
 }
 .clear-btn:hover { background-color: #cc0000; }
 
+.clear-files-btn {
+  background-color: #FFA500;
+  color: white;
+}
+.clear-files-btn:hover { background-color: #FF8C00; }
+
 .spectrogram-img {
   max-width: 100%;
   border-radius: 8px;
