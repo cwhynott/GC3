@@ -102,6 +102,7 @@ function FileHandle() {
     }
   };
   
+  
   // **Handle clearing only selected files**
   const handleClearSelectedFiles = () => {
     setSelectedCFile(null);
@@ -226,13 +227,14 @@ function FileHandle() {
         <div className="file-row">
           <label htmlFor="cfile-upload" className="custom-file-upload">Choose .cfile</label>
           <input id="cfile-upload" type="file" accept=".cfile" onChange={handleCFileChange} className="file-input" />
-          {selectedCFileName && <span className="file-name">{selectedCFileName}</span>}
+          <span className="file-name">{selectedCFileName || "No file selected"}</span>
         </div>
 
         <div className="file-row">
           <label htmlFor="meta-upload" className="custom-file-upload">Choose .sigmf</label>
           <input id="meta-upload" type="file" accept=".sigmf-meta" onChange={handleMetaFileChange} className="file-input" />
-          {selectedMetaFileName && <span className="file-name">{selectedMetaFileName}</span>}
+          <span className="file-name">{selectedMetaFileName || "No file selected"}</span>
+
         </div>
       </div>
 
