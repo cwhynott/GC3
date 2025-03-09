@@ -15,6 +15,8 @@ function FileHandle() {
   const [selectedCFileName, setSelectedCFileName] = useState<string | null>(null);
   const [selectedMetaFileName, setSelectedMetaFileName] = useState<string | null>(null);
   const [fileId, setFileId] = useState<string | null>(null);
+  const [dots, setDots] = useState<string>(''); // Track the dots
+
 
   // State for tab switching
   const [activeTab, setActiveTab] = useState<string>('spectrogram');
@@ -68,7 +70,7 @@ function FileHandle() {
       return setStatusMessage('Both .cfile and .sigmf-meta files are required.');
     }
 
-    setStatusMessage('Uploading files...');
+    updateStatusMessage('Uploading files');
     try {
       const formData = new FormData();
       formData.append('cfile', selectedCFile);
@@ -151,7 +153,7 @@ function FileHandle() {
   };
 
   const handleClearFiles = async () => {
-    setStatusMessage('Clearing all saved files...');
+    updateStatusMessage("Clearing all saved files");
     try {
       const response = await fetch('http://127.0.0.1:5000/refresh', { method: 'POST' });
   
@@ -185,9 +187,7 @@ function FileHandle() {
 
   // Fetch saved files from the database
   const fetchSavedFiles = async () => {
-    try {
-      console.log("Fetching saved files..."); // ✅ Debugging log
-  
+    try {  
       const response = await fetch('http://127.0.0.1:5000/files');
       const result = await response.json();
   
@@ -195,10 +195,7 @@ function FileHandle() {
         console.error("Error fetching saved files:", result.error);
         setStatusMessage(`Error: ${result.error}`);
         return;
-      }
-  
-      console.log("Fetched saved files:", result.files); // ✅ Debugging log
-  
+      }  
       if (Array.isArray(result.files)) {
         setSavedFiles(result.files);
       } else {
@@ -217,9 +214,34 @@ function FileHandle() {
     setStatusMessage('Please upload a .cfile and .sigmf file');
   }, []);
 
+  // Dot Animation Effect: Runs whenever statusMessage changes
+  useEffect(() => {
+    if (statusMessage === "Uploading files" || statusMessage === "Clearing all saved files...") {
+      setDots(""); // Reset dots when statusMessage starts
+  
+      const interval = setInterval(() => {
+        setDots((prevDots) => (prevDots.length === 3 ? "" : prevDots + ".")); // Cycle . → .. → ... → .
+      }, 500);
+  
+      return () => clearInterval(interval); // Cleanup on unmount or message change
+    } else {
+      setDots(""); // Ensure no dots for other messages
+    }
+  }, [statusMessage]);
+  
+  const updateStatusMessage = (message: string) => {
+    setStatusMessage(message);
+    if (message !== "Uploading files" && message !== "Clearing all saved files...") {
+      setDots(""); // Stop dots animation for other messages
+    }
+  };
+  
+  
+
   return (
     <main className="enhanced-app-container">
-      {statusMessage && <p className="status-banner">{statusMessage}</p>}
+      <p className="status-banner">{statusMessage}{dots}</p>
+
 
       {/* File Selection - Stacked vertically */}
       <div className="file-selection">
