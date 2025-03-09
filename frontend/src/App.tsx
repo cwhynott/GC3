@@ -21,6 +21,7 @@ function App() {
 
   return (
     <main className="enhanced-app-container">
+      {/* ✅ Application Header */}
       <header className="app-header">
         <nav className="menu-bar">
           <div className="menu-item" ref={dropdownRef}>
@@ -68,8 +69,11 @@ function App() {
         </nav>
         <img src="/images/GC3 Logo.png" alt="GC3 Logo" className="app-logo" />
       </header>
-      <DisplayTabs />
 
+      {/* ✅ Main Layout: Upload Controls + Metadata + Tabs */}
+      <div className="upload-metadata-wrapper">
+        <DisplayTabs />
+      </div>
     </main>
   );
 }

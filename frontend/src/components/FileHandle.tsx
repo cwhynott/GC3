@@ -6,7 +6,12 @@ interface SavedFile {
   filename: string;
 }
 
-function FileHandle() {
+interface FileHandleProps {
+  fileId: string | null;
+  onFileSelect: (fileId: string) => void;
+}
+
+const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
   // State variables
   const [selectedCFile, setSelectedCFile] = useState<File | null>(null);
   const [selectedMetaFile, setSelectedMetaFile] = useState<File | null>(null);
@@ -14,7 +19,6 @@ function FileHandle() {
   const [statusMessage, setStatusMessage] = useState<string>('Please upload a .cfile and .sigmf-meta file');
   const [selectedCFileName, setSelectedCFileName] = useState<string | null>(null);
   const [selectedMetaFileName, setSelectedMetaFileName] = useState<string | null>(null);
-  const [fileId, setFileId] = useState<string | null>(null);
   const [dots, setDots] = useState<string>(''); // Track the dots
 
 
@@ -26,6 +30,12 @@ function FileHandle() {
     freq_domain: null,
     iq_plot: null,
   });
+
+  useEffect(() => {
+    if (fileId) {
+      fetchPlots(fileId);
+    }
+  }, [fileId]);
 
   // Handle .cfile selection
   const handleCFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -83,7 +93,7 @@ function FileHandle() {
 
       console.log("Upload Response:", result); // ✅ Debugging log
 
-      setFileId(result.file_id);
+      onFileSelect(result.file_id);
 
       // ✅ Immediately add uploaded file to saved list
       setSavedFiles((prevFiles) => [
@@ -111,7 +121,6 @@ function FileHandle() {
     setSelectedMetaFile(null);
     setSelectedCFileName(null);
     setSelectedMetaFileName(null);
-    setFileId(null);
     setPlotImages({
       spectrogram: null,
       time_domain: null,
@@ -178,11 +187,11 @@ function FileHandle() {
 
   // Handle loading a saved file
   const handleLoadFile = async (fileId: string) => {
-    setFileId(fileId);
     setActiveTab('spectrogram');  // ✅ Ensure spectrogram is shown first
     setStatusMessage('Loading file...');
     fetchPlots(fileId);
     setStatusMessage('Files loaded successfully');
+    onFileSelect(fileId);
   };  
 
   // Fetch saved files from the database

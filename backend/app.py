@@ -48,14 +48,24 @@ def create_app():
         cfile, metafile = request.files['cfile'], request.files['metaFile']
         original_name = cfile.filename.replace('.cfile', '')
 
-        sigmf_metadata = SigMF(metafile)
+        try:
+            # ✅ Pass the actual file object to SigMF, NOT a string
+            sigmf_metadata = SigMF(metafile)
+        except Exception as e:
+            return jsonify({'error': f'Failed to parse metadata: {str(e)}'}), 400
+
         iq_data = np.frombuffer(cfile.read(), dtype=np.complex64)
 
         plot_ids, Pxx, freqs, bins = generate_plots(original_name, iq_data, sigmf_metadata)
         pxx_csv_file_id = save_pxx_csv(original_name, Pxx, freqs, bins)
 
-        # Create and store metadata using FileData class
+        # ✅ Save the metadata file in GridFS
+        metafile.seek(0)  # Reset file pointer before saving
+        meta_file_id = fs.put(metafile.read(), filename=f"{original_name}.sigmf-meta")
+
+        # ✅ Store metadata file ID in file_records
         file_data = FileData(original_name, sigmf_metadata, pxx_csv_file_id, plot_ids)
+        file_data.meta_file_id = meta_file_id  # ✅ Save metadata file ID
         file_record_id = db.file_records.insert_one(file_data.__dict__).inserted_id
 
         encoded_spectrogram = base64.b64encode(fs.get(plot_ids["spectrogram"]).read()).decode('utf-8')
@@ -65,6 +75,8 @@ def create_app():
             'file_id': str(file_record_id),
             'message': 'All files uploaded and saved successfully'
         })
+
+
 
     def generate_plots(original_name, iq_data, sigmf_metadata):
         """Generates and stores plots in GridFS."""
@@ -225,6 +237,56 @@ def create_app():
             return jsonify({'error': f'{plot_type} file does not exist in GridFS'}), 404
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+
+
+    import json
+
+    @app.route('/metadata/<file_id>', methods=['GET'])
+    def get_metadata(file_id):
+        """Fetch metadata for a given file."""
+        if not ObjectId.is_valid(file_id):
+            return jsonify({'error': 'Invalid file ID format'}), 400  
+
+        file_record = db.file_records.find_one({"_id": ObjectId(file_id)})
+        if not file_record:
+            return jsonify({'error': 'File not found'}), 404
+
+        # ✅ Ensure meta_file_id exists in file_record
+        if "meta_file_id" not in file_record:
+            return jsonify({'error': 'meta_file_id not found in record'}), 400
+
+        try:
+            # ✅ Fetch the metadata file from GridFS
+            meta_file = fs.get(ObjectId(file_record["meta_file_id"]))
+
+            # ✅ Read and decode metadata
+            meta_content = meta_file.read().decode('utf-8')  # Keep this as a string!
+
+            # ✅ Pass the JSON string to SigMF (not a dict!)
+            sigmf_metadata = SigMF(meta_content)  # 🚀 Pass JSON string, not dict!
+
+        except gridfs_errors.NoFile:
+            return jsonify({'error': 'Metadata file not found in GridFS'}), 404
+        except json.JSONDecodeError:
+            return jsonify({'error': 'Failed to parse metadata JSON'}), 400
+        except Exception as e:
+            return jsonify({'error': f'Error processing SigMF: {str(e)}'}), 500
+
+        # ✅ Return extracted metadata
+        metadata = {
+            "datatype": sigmf_metadata.datatype,
+            "sample_rate": sigmf_metadata.sample_rate,
+            "author": sigmf_metadata.author,
+            "hardware": sigmf_metadata.hardware,
+            "offset": sigmf_metadata.offset,
+            "recorder": sigmf_metadata.recorder,
+            "datetime": sigmf_metadata.datetime,
+            "center_frequency": sigmf_metadata.center_frequency,
+            "sample_start": sigmf_metadata.sample_start,
+        }
+
+        return jsonify(metadata)
+
 
 
     return app

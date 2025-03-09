@@ -6,7 +6,7 @@
  */
 
 #root {
-  max-width: 1280px;
+  width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
@@ -26,6 +26,111 @@
   color: #2c3e50;
   margin-bottom: 2rem;
   text-align: center;
+}
+
+.tab-layout {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+}
+
+.tab-content {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  align-items: stretch; /* Ensures equal height */
+  width: 100%;
+}
+
+.statistics-container {
+  width: 30%; /* Less wide */
+  min-width: 250px; /* Ensure it doesn't shrink too much */
+  background-color: #f8f8f8;
+  padding: 20px;
+  border-radius: 5px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.file-handle-container {
+  flex-grow: 1; /* Takes up remaining space */
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 400px; /* Ensures equal height */
+}
+
+/* ✅ Main Tab Content */
+.tabs-container {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* ✅ Styling for Statistics Header */
+.statistics-header {
+  font-size: 18px; /* Slightly larger than metadata text */
+  font-family: Arial, sans-serif; /* Match UI font */
+  font-weight: bold; /* Make it stand out */
+  color: #2c3e50; /* Dark blue for a professional look */
+  text-align: center;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #ddd; /* Adds separation */
+  margin-bottom: 15px; /* Adds spacing below */
+}
+
+/* ✅ Styling for Statistics Header */
+.error-message {
+  font-size: 16px; /* Slightly larger than metadata text */
+  font-family: Arial, sans-serif; /* Match UI font */
+  font-weight: bold; /* Make it stand out */
+  color: #2c3e50; /* Dark blue for a professional look */
+  text-align: center;
+  padding-bottom: 10px;
+  margin-bottom: 15px; /* Adds spacing below */
+}
+
+/* ✅ Styling for metadata */
+.metadata-display {
+  font-size: 18px; /* Slightly larger than metadata text */
+  font-family: Arial, sans-serif; /* Match UI font */
+  font-weight: bold; /* Make it stand out */
+  color: #2c3e50; /* Dark blue for a professional look */
+  text-align: center;
+  padding-bottom: 10px;
+  margin-bottom: 15px; /* Adds spacing below */
+}
+
+.no-file-message {
+  font-size: 16px; /* Slightly larger than metadata text */
+  font-family: Arial, sans-serif; /* Match UI font */
+  font-weight: bold; /* Make it stand out */
+  color: #2c3e50; /* Dark blue for a professional look */
+  text-align: center;
+  padding-bottom: 10px;
+  margin-bottom: 15px; /* Adds spacing below */
+}
+
+
+
+/* ✅ Main Content (File Upload + Display Tabs) */
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow-y: auto;
 }
 
 .status-banner {
@@ -196,32 +301,6 @@
   background-color: #f1f1f1;
 }
 
-/* Other existing styles */
-.enhanced-app-container {
-  width: 90%;
-  font-family: Arial, sans-serif;
-  padding: 2rem;
-  background-color: #f5f7fa;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.app-header h1 {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #2c3e50;
-  margin: 0;
-}
-
-.status-banner {
-  background-color: #eaf6ff;
-  padding: 1rem;
-  border-radius: 8px;
-  color: #2c82c9;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
 
 .file-selection {
   display: flex;
@@ -296,10 +375,6 @@
   gap: 10px; /* Adds spacing between button and filename */
 }
 
-
-
-
-
 .file-actions, .saved-files-actions {
   display: flex;
   flex-wrap: wrap;
@@ -313,33 +388,6 @@
   border-radius: 6px;
   border: 1px solid #ccc;
 }
-
-.btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.upload-btn {
-  background-color: #4caf50;
-  color: white;
-}
-.upload-btn:hover { background-color: #45a049; }
-
-.save-btn {
-  background-color: #2196f3;
-  color: white;
-}
-.save-btn:hover { background-color: #1976d2; }
-
-.load-btn {
-  background-color: #ffa500;
-  color: white;
-}
-.load-btn:hover { background-color: #e69500; }
 
 .clear-btn {
   background-color: #ff4d4d;
@@ -367,35 +415,15 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.file-list {
-  list-style-type: none;
-  padding: 0;
-}
-
-.file-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem;
-  font-size: 1rem;
-  border-bottom: 1px solid #e0e0e0;
-  color: #333;
-}
-
-.file-item:last-child {
-  border-bottom: none;
-}
-
-.no-files {
-  text-align: center;
-  font-style: italic;
-  color: #888;
-}
-
 .app-logo {
   max-height: 100px;
   width: auto;
   padding-bottom: 10px;
+}
+.app-layout {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
 }
 
 /* Change tab colors */
