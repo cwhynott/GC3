@@ -6,7 +6,7 @@
  */
 
 #root {
-  max-width: 1280px;
+  width: 100%;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
@@ -26,6 +26,111 @@
   color: #2c3e50;
   margin-bottom: 2rem;
   text-align: center;
+}
+
+.tab-layout {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+}
+
+.tab-content {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  align-items: stretch; /* Ensures equal height */
+  width: 100%;
+}
+
+.statistics-container {
+  width: 30%; /* Less wide */
+  min-width: 250px; /* Ensure it doesn't shrink too much */
+  background-color: #f8f8f8;
+  padding: 20px;
+  border-radius: 5px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.file-handle-container {
+  flex-grow: 1; /* Takes up remaining space */
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 400px; /* Ensures equal height */
+}
+
+/* ✅ Main Tab Content */
+.tabs-container {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* ✅ Styling for Statistics Header */
+.statistics-header {
+  font-size: 18px; /* Slightly larger than metadata text */
+  font-family: Arial, sans-serif; /* Match UI font */
+  font-weight: bold; /* Make it stand out */
+  color: #2c3e50; /* Dark blue for a professional look */
+  text-align: center;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #ddd; /* Adds separation */
+  margin-bottom: 15px; /* Adds spacing below */
+}
+
+/* ✅ Styling for Statistics Header */
+.error-message {
+  font-size: 16px; /* Slightly larger than metadata text */
+  font-family: Arial, sans-serif; /* Match UI font */
+  font-weight: bold; /* Make it stand out */
+  color: #2c3e50; /* Dark blue for a professional look */
+  text-align: center;
+  padding-bottom: 10px;
+  margin-bottom: 15px; /* Adds spacing below */
+}
+
+/* ✅ Styling for metadata */
+.metadata-display {
+  font-size: 18px; /* Slightly larger than metadata text */
+  font-family: Arial, sans-serif; /* Match UI font */
+  font-weight: bold; /* Make it stand out */
+  color: #2c3e50; /* Dark blue for a professional look */
+  text-align: center;
+  padding-bottom: 10px;
+  margin-bottom: 15px; /* Adds spacing below */
+}
+
+.no-file-message {
+  font-size: 16px; /* Slightly larger than metadata text */
+  font-family: Arial, sans-serif; /* Match UI font */
+  font-weight: bold; /* Make it stand out */
+  color: #2c3e50; /* Dark blue for a professional look */
+  text-align: center;
+  padding-bottom: 10px;
+  margin-bottom: 15px; /* Adds spacing below */
+}
+
+
+
+/* ✅ Main Content (File Upload + Display Tabs) */
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow-y: auto;
 }
 
 .status-banner {
@@ -123,3 +228,271 @@
   font-style: italic;
   color: #888;
 }
+
+/* Style the header */
+.app-header {
+  display: flex;
+  justify-content: center; /* Center the content horizontally */
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  position: relative; /* Allow absolute positioning of the menu bar */
+}
+
+/* Style the menu bar */
+.menu-bar {
+  display: flex;
+  gap: 10px;
+  position: absolute;
+  top: 40px;
+  left: 5px;
+}
+
+/* Style the menu item */
+.menu-item {
+  position: relative; /* Position the dropdown menu relative to this container */
+}
+
+/* Style the menu buttons */
+.menu-button {
+  padding: 10px 15px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #007bff;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.menu-button:hover {
+  background-color: #e9ecef;
+}
+
+/* Style the dropdown menu */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap; /* Prevent wrapping of dropdown items */
+}
+
+/* Style the dropdown items */
+.dropdown-item {
+  padding: 10px 15px;
+  font-size: 14px;
+  color: #333;
+  background-color: white;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f1f1f1;
+}
+
+
+.file-selection {
+  display: flex;
+  flex-direction: column; /* Stack file selection buttons */
+  align-items: flex-start; /* Align everything to the left */
+  gap: 1rem; /* Space between elements */
+  margin-bottom: 2rem;
+}
+
+/* Hide default file input */
+.file-input {
+  display: none;
+}
+
+/* Custom File Upload Button */
+.custom-file-upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  background-color: #f8f9fa;
+  color: #495057;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: center;
+  transition: all 0.3s ease-in-out;
+  border: 2px dashed #dee2e6;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Add upload icon using pseudo-element */
+.custom-file-upload::before {
+  content: "📁";
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+/* Hover Effect */
+.custom-file-upload:hover {
+  color: #007bff;
+  background-color: #e9ecef;
+  border-color: #007bff;
+}
+
+/* Style for displaying saved file names */
+.file-name {
+  font-size: 14px;
+  color: black; /* Ensure text is black */
+  font-weight: bold;
+  max-width: none; /* ✅ Allow full filename display */
+  overflow: visible; /* ✅ Ensure text is fully visible */
+  white-space: normal; /* ✅ Allow wrapping */
+  word-break: break-all; /* ✅ Prevent overflow */
+}
+
+/* Make sure saved file list doesn't cut off filenames */
+.saved-files ul {
+  list-style-type: none;
+  padding: 0;
+  max-width: 100%; /* ✅ Ensure the container is wide enough */
+}
+
+/* Ensure the saved files list items are properly spaced */
+.saved-files li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: black;
+  font-weight: bold;
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+  max-width: 100%; /* ✅ Ensure full width is used */
+}
+
+
+/* Ensure both buttons are aligned properly */
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Adds spacing between button and filename */
+}
+
+.file-actions, .saved-files-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.file-input {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.clear-btn {
+  background-color: #ff4d4d;
+  color: white;
+}
+.clear-btn:hover { background-color: #cc0000; }
+
+.clear-files-btn {
+  background-color: #FFA500;
+  color: white;
+}
+.clear-files-btn:hover { background-color: #FF8C00; }
+
+.spectrogram-img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border: 2px solid #e0e0e0;
+}
+
+.saved-files {
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.app-logo {
+  max-height: 100px;
+  width: auto;
+  padding-bottom: 10px;
+}
+.app-layout {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+}
+
+/* Change tab colors */
+.tabs button {
+  background-color: #007BFF; /* 🔵 Blue color for tabs */
+  color: white; /* ⚪ White text */
+  border: none;
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px 5px 0 0; /* Rounded top corners */
+  transition: background-color 0.3s ease-in-out;
+}
+
+/* Change color when tab is active */
+.tabs button.active {
+  background-color: #0056b3; /* 🔵 Darker blue when active */
+  font-weight: bold;
+}
+
+/* Hover effect */
+.tabs button:hover {
+  background-color: #0056b3; /* 🔵 Darker blue on hover */
+}
+
+/* Style for Load buttons in the Saved Files section */
+.saved-files button {
+  background-color: #fd7e14; /* 🟠 Orange */
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  margin-left: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease-in-out;
+}
+
+/* Hover effect */
+.saved-files button:hover {
+  background-color: #e06c10; /* 🟠 Darker Orange */
+}
+
+/* Active effect when clicked */
+.saved-files button:active {
+  background-color: #c75c0a; /* 🟠 Even Darker Orange */
+}
+
+.plot-image {
+  width: 100%; /* Makes the image take up the full width of the container */
+  height: auto; /* Maintains aspect ratio */
+  display: block; /* Prevents extra spacing */
+  object-fit: contain; /* Ensures the entire image fits inside the box */
+}
+
+
+
+

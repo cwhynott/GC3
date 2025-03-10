@@ -14,6 +14,7 @@ import base64
 from pymongo import MongoClient
 from bson import ObjectId
 from gridfs import GridFS
+from gridfs import errors as gridfs_errors
 from SigMF import SigMF
 from FileData import FileData
 import csv
@@ -40,219 +41,157 @@ def create_app():
 
     @app.route('/upload', methods=['POST'])
     def upload_file():
-        """
-        Uploads both .cfile and .sigmf-meta files, converts the cfile to CSV, 
-        generates a spectrogram, IQ plot, time-domain plot, and frequency-domain plot.
-        Stores everything in MongoDB, but only visualizes the spectrogram.
-        """
+        """Uploads files, generates plots, stores in MongoDB."""
         if 'cfile' not in request.files or 'metaFile' not in request.files:
             return jsonify({'error': 'Both .cfile and .sigmf-meta files are required'}), 400
 
-        cfile = request.files['cfile']
-        metafile = request.files['metaFile']
-        original_name = cfile.filename.replace('.cfile', '')  # Remove extension
+        cfile, metafile = request.files['cfile'], request.files['metaFile']
+        original_name = cfile.filename.replace('.cfile', '')
 
-        # Parse metadata using SigMF class
-        sigmf_metadata = SigMF(metafile)
+        try:
+            # ✅ Pass the actual file object to SigMF, NOT a string
+            sigmf_metadata = SigMF(metafile)
+        except Exception as e:
+            return jsonify({'error': f'Failed to parse metadata: {str(e)}'}), 400
 
-        # Read .cfile and convert to complex numpy array
-        cfile.seek(0)
         iq_data = np.frombuffer(cfile.read(), dtype=np.complex64)
 
-        # --- Generate and Store Plots Individually ---
-        
-        # **Time Domain Plot**
-        plt.figure(figsize=(8, 4))
-        time_axis = np.arange(len(iq_data)) / sigmf_metadata.sample_rate
-        plt.plot(time_axis[:1000], iq_data[:1000].real, label="Real")
-        plt.plot(time_axis[:1000], iq_data[:1000].imag, label="Imaginary", linestyle='dashed')
-        plt.title("Time Domain Signal")
-        plt.xlabel("Time [s]")
-        plt.ylabel("Amplitude")
-        plt.legend()
-        buf = io.BytesIO()
-        plt.savefig(buf, format='png')
-        plt.close()
-        buf.seek(0)
-        time_domain_file_id = fs.put(buf.getvalue(), filename=f"{original_name}_time_domain.png")
-        print("Created Time Domain")
+        plot_ids, Pxx, freqs, bins = generate_plots(original_name, iq_data, sigmf_metadata)
+        pxx_csv_file_id = save_pxx_csv(original_name, Pxx, freqs, bins)
 
-        # **Frequency Domain Plot (FFT)**
-        plt.figure(figsize=(8, 4))
+        # ✅ Save the metadata file in GridFS
+        metafile.seek(0)  # Reset file pointer before saving
+        meta_file_id = fs.put(metafile.read(), filename=f"{original_name}.sigmf-meta")
+
+        # ✅ Store metadata file ID in file_records
+        file_data = FileData(original_name, sigmf_metadata, pxx_csv_file_id, plot_ids)
+        file_data.meta_file_id = meta_file_id  # ✅ Save metadata file ID
+        file_record_id = db.file_records.insert_one(file_data.__dict__).inserted_id
+
+        encoded_spectrogram = base64.b64encode(fs.get(plot_ids["spectrogram"]).read()).decode('utf-8')
+
+        return jsonify({
+            'spectrogram': encoded_spectrogram,
+            'file_id': str(file_record_id),
+            'message': 'All files uploaded and saved successfully'
+        })
+
+    def generate_plots(original_name, iq_data, sigmf_metadata):
+        """Generates and stores plots in GridFS."""
+        plots = {}
+
+        # Debug: Starting plot generation
+        print(f"Generating plots for {original_name}...")
+
+        # Generate spectrogram and get Pxx, freqs, bins
+        fig, Pxx, freqs, bins = plot_spectrogram(iq_data, sigmf_metadata)
+        spectrogram_file_id = save_plot(fig, f"{original_name}_spectrogram.png")
+        plots["spectrogram"] = spectrogram_file_id
+        print(f"Saved Spectrogram: {spectrogram_file_id}")
+
+        # Generate time domain plot
+        fig = plot_time_domain(iq_data, sigmf_metadata)
+        plots["time_domain"] = save_plot(fig, f"{original_name}_time_domain.png")
+        print(f"Saved Time Domain Plot: {plots['time_domain']}")
+
+        # Generate frequency domain (FFT) plot
+        fig = plot_freq_domain(iq_data, sigmf_metadata)
+        plots["freq_domain"] = save_plot(fig, f"{original_name}_freq_domain.png")
+        print(f"Saved Frequency Domain Plot: {plots['freq_domain']}")
+
+        # Generate IQ plot (Constellation Diagram)
+        fig = plot_iq(iq_data)
+        plots["iq_plot"] = save_plot(fig, f"{original_name}_iq_plot.png")
+        print(f"Saved IQ Plot: {plots['iq_plot']}")
+
+        # Debug: Finished plot generation
+        print(f"All plots generated and saved for {original_name}.")
+
+        return plots, Pxx, freqs, bins
+
+    def save_plot(fig, filename):
+        """Saves a given Matplotlib figure to GridFS."""
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png')
+        plt.close(fig)
+        buf.seek(0)
+        return fs.put(buf.getvalue(), filename=filename)
+
+    def plot_time_domain(iq_data, sigmf_metadata):
+        """Generates the time-domain plot."""
+        fig, ax = plt.subplots(figsize=(8, 4))
+        time_axis = np.arange(len(iq_data)) / sigmf_metadata.sample_rate
+        ax.plot(time_axis[:1000], iq_data[:1000].real, label="Real")
+        ax.plot(time_axis[:1000], iq_data[:1000].imag, label="Imaginary", linestyle='dashed')
+        ax.set_title("Time Domain Signal")
+        ax.set_xlabel("Time [s]")
+        ax.set_ylabel("Amplitude")
+        ax.legend()
+        return fig
+
+    def plot_freq_domain(iq_data, sigmf_metadata):
+        """Generates the frequency-domain (FFT) plot."""
+        fig, ax = plt.subplots(figsize=(8, 4))
         fft_spectrum = np.fft.fftshift(np.fft.fft(iq_data))
         freq_axis = np.fft.fftshift(np.fft.fftfreq(len(iq_data), 1 / sigmf_metadata.sample_rate))
-        plt.plot(freq_axis, 20 * np.log10(np.abs(fft_spectrum)), color='red')
-        plt.title("Frequency Domain (FFT)")
-        plt.xlabel("Frequency [Hz]")
-        plt.ylabel("Power [dB]")
-        buf = io.BytesIO()
-        plt.savefig(buf, format='png')
-        plt.close()
-        buf.seek(0)
-        freq_domain_file_id = fs.put(buf.getvalue(), filename=f"{original_name}_freq_domain.png")
-        print("Created Frequency Domain")
+        ax.plot(freq_axis, 20 * np.log10(np.abs(fft_spectrum)), color='red')
+        ax.set_title("Frequency Domain (FFT)")
+        ax.set_xlabel("Frequency [Hz]")
+        ax.set_ylabel("Power [dB]")
+        return fig
 
-        # **IQ Plot (Constellation Diagram)**
-        plt.figure(figsize=(8, 8))
-        plt.scatter(iq_data[:5000].real, iq_data[:5000].imag, alpha=0.5, s=2)
-        plt.title("IQ Plot (Constellation Diagram)")
-        plt.xlabel("In-phase")
-        plt.ylabel("Quadrature")
-        buf = io.BytesIO()
-        plt.savefig(buf, format='png')
-        plt.close()
-        buf.seek(0)
-        iq_plot_file_id = fs.put(buf.getvalue(), filename=f"{original_name}_iq_plot.png")
-        print("Created IQ Plot")
+    def plot_iq(iq_data):
+        """Generates the IQ plot (constellation diagram)."""
+        fig, ax = plt.subplots(figsize=(8, 8))
+        ax.scatter(iq_data[:5000].real, iq_data[:5000].imag, alpha=0.5, s=2)
+        ax.set_title("IQ Plot (Constellation Diagram)")
+        ax.set_xlabel("In-phase")
+        ax.set_ylabel("Quadrature")
+        return fig
 
-        # **Spectrogram (Visualized in Response)**
-        plt.figure()
-        Pxx, freqs, bins, im = plt.specgram(iq_data, Fs=sigmf_metadata.sample_rate, Fc=sigmf_metadata.center_frequency, cmap='viridis')
-        # Convert spectrogram to PNG (Binary)
-        buf = io.BytesIO()
-        plt.imshow(10 * np.log10(Pxx.T), aspect='auto', extent=[freqs[0], freqs[-1], bins[-1], 0], cmap='viridis')
-        plt.xlabel("Frequency [Hz]")
-        plt.ylabel("Time [s]")
-        plt.savefig(buf, format='png')
-        plt.close()
-        buf.seek(0)
-        spectrogram_data = buf.getvalue()
-        spectrogram_file_id = fs.put(spectrogram_data, filename=f"{original_name}_spectrogram.png")
-        print("Created Spectrogram")
-        
-        # **Save Pxx as CSV**
+    def plot_spectrogram(iq_data, sigmf_metadata):
+        """Generates the spectrogram and returns Pxx, freqs, bins."""
+        fig, ax = plt.subplots(figsize=(8, 4.8))
+        # Generate the spectrogram
+        Pxx, freqs, bins, im = ax.specgram(
+            iq_data,
+            Fs=sigmf_metadata.sample_rate,
+            Fc=sigmf_metadata.center_frequency,
+            cmap='viridis'
+        )
+        # Overlay image representation of Pxx (Power Spectral Density)
+        ax.imshow(10 * np.log10(Pxx.T), aspect='auto', extent=[freqs[0], freqs[-1], bins[-1], 0], cmap='viridis')
+        # Set plot labels
+        ax.set_xlabel("Frequency [Hz]")
+        ax.set_ylabel("Time [s]")
+        ax.set_title("Spectrogram")
+        return fig, Pxx, freqs, bins
+
+    def save_pxx_csv(original_name, Pxx, freqs, bins):
+        """Saves the Pxx matrix as a CSV in GridFS."""
         pxx_csv_data = io.StringIO()
         csv_writer = csv.writer(pxx_csv_data)
-        
-        # Write Header Row: Time Bins
-        csv_writer.writerow(["Frequency (Hz)"] + bins.tolist())
 
-        # Write Pxx Values (Each Row is a Frequency Bin)
+        csv_writer.writerow(["Frequency (Hz)"] + bins.tolist())
         for i, freq in enumerate(freqs):
             csv_writer.writerow([freq] + Pxx[i].tolist())
 
         pxx_csv_data.seek(0)
-        print("Generated Pxx CSV")
-
-        # Store Pxx CSV in GridFS
-        pxx_csv_file_id = fs.put(pxx_csv_data.getvalue().encode(), filename=f"{original_name}_pxx.csv")
-
-
-        # Store metadata
-        file_data = FileData(raw_data_filename=cfile.filename, fft=1024, sigmf=sigmf_metadata)
-        file_data_dict = {
-            "raw_data_filename": file_data.raw_data_filename,
-            "pxx_csv_filename": f"{original_name}_pxx.csv",
-            "spectrogram_filename": file_data.spectrogram_filename,
-            "iq_plot_filename": file_data.iq_plot_filename,
-            "time_domain_filename": file_data.time_domain_filename,
-            "freq_domain_filename": file_data.freq_domain_filename,
-            "sigmf": sigmf_metadata.__dict__,
-            "fft": file_data.fft
-        }
-
-        document = {
-            "filename": original_name,
-            "csv_file_id": str(pxx_csv_file_id),
-            "spectrogram_file_id": str(spectrogram_file_id),
-            "iq_plot_file_id": str(iq_plot_file_id),
-            "time_domain_file_id": str(time_domain_file_id),
-            "freq_domain_file_id": str(freq_domain_file_id),
-            "metadata": sigmf_metadata.__dict__,
-            "filedata": file_data_dict
-        }
-
-        file_record_id = db.file_records.insert_one(document).inserted_id
-
-        print(f"Saved '{original_name}' with CSV, Spectrogram, Metadata, and FileData.")
-
-        # Encode spectrogram to base64
-        encoded_spectrogram = base64.b64encode(spectrogram_data).decode('utf-8')
-
-        return jsonify({
-            'spectrogram': encoded_spectrogram,  # ✅ Ensure spectrogram is included
-            'file_id': str(file_record_id),
-            'message': 'All files uploaded successfully'
-        })
-
-
-
-    @app.route('/save', methods=['POST'])
-    def save_file():
-        """
-        Saves all related files (CSV, spectrogram, metadata, and FileData) in MongoDB under the original cfile name.
-        """
-        if 'filename' not in request.json:
-            return jsonify({'error': 'Filename is required'}), 400
-
-        filename = request.json['filename']
-
-        try:
-            # Check if the file already exists in the database
-            existing_file = db.file_records.find_one({"filename": filename})
-
-            if existing_file:
-                return jsonify({'message': 'File already saved', 'file_id': str(existing_file["_id"])})
-
-            # Retrieve CSV and Spectrogram IDs from GridFS
-            csv_file = fs.find_one({"filename": f"{filename}.csv"})
-            spectrogram_file = fs.find_one({"filename": f"{filename}_spectrogram.png"})
-
-            if not csv_file or not spectrogram_file:
-                return jsonify({'error': 'Associated CSV or Spectrogram not found'}), 404
-
-            # Retrieve metadata and FileData from uploaded data
-            file_entry = db.file_records.find_one({"filename": filename}, {"metadata": 1, "filedata": 1})
-
-            if not file_entry:
-                return jsonify({'error': 'Metadata and FileData not found'}), 404
-
-            # Ensure correct ObjectId storage
-            document = {
-                "filename": filename,
-                "csv_file_id": str(csv_file._id),  # Ensure it's stored as a string
-                "spectrogram_file_id": str(spectrogram_file._id),  # Ensure it's stored as a string
-                "metadata": file_entry["metadata"],
-                "filedata": file_entry["filedata"]
-            }
-
-            file_record_id = db.file_records.insert_one(document).inserted_id
-            print(f"File '{filename}' saved with ID {file_record_id}")
-
-            return jsonify({'message': 'All related files saved successfully', 'file_id': str(file_record_id)})
-
-        except Exception as e:
-            print("Error saving files:", e)
-            return jsonify({'error': str(e)}), 500
+        return fs.put(pxx_csv_data.getvalue().encode(), filename=f"{original_name}_pxx.csv")
 
     @app.route('/files', methods=['GET'])
     def get_files():
-        """
-        Lists all stored filenames.
-        """
+        """Lists all stored filenames."""
         try:
-            files = list(db.file_records.find({}, {"filename": 1}))  # Convert cursor to a list
-
-            # Debugging - Print retrieved files
-            print("Fetched Files from DB:", files)
-
-            if not files:
-                print("No files found in the database.")
-
+            files = list(db.file_records.find({}, {"filename": 1}))
             file_list = [{"_id": str(file["_id"]), "filename": file["filename"]} for file in files]
-            
-            return jsonify({"files": file_list})  # ✅ Ensure correct JSON format
-
+            return jsonify({"files": file_list})
         except Exception as e:
-            print("Error fetching saved files:", e)
             return jsonify({'error': str(e)}), 500
-
 
     @app.route('/file/<file_id>/spectrogram', methods=['GET'])
     def get_file_spectrogram(file_id):
-        """
-        Retrieves the spectrogram PNG from GridFS using the saved file ID.
-        """
+        """Retrieves the spectrogram PNG from GridFS using the saved file ID."""
         try:
             if not ObjectId.is_valid(file_id):
                 return jsonify({'error': 'Invalid file ID format'}), 400  
@@ -261,81 +200,91 @@ def create_app():
             if not file_record:
                 return jsonify({'error': 'File not found'}), 404
 
-            spectrogram_file_id = file_record.get("spectrogram_file_id")
-            if not spectrogram_file_id:
-                return jsonify({'error': 'Spectrogram file not found'}), 404
-
-            # Fetch from GridFS
-            spectrogram_file = fs.get(ObjectId(spectrogram_file_id))
-            spectrogram_data = spectrogram_file.read()
-
-            # Encode spectrogram to base64
-            encoded_img = base64.b64encode(spectrogram_data).decode('utf-8')
-
-            # Debugging print
-            print(f"Fetched Spectrogram (First 100 chars): {encoded_img[:100]}")
-
-            return jsonify({'image': encoded_img})
-
+            spectrogram_file = fs.get(ObjectId(file_record["spectrogram_file_id"]))
+            return jsonify({'image': base64.b64encode(spectrogram_file.read()).decode('utf-8')})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
-
-
 
     @app.route('/refresh', methods=['POST'])
     def refresh_files():
-        """
-        Clears all saved files and associated metadata from the database.
-        """
+        """Clears all saved files and metadata."""
         try:
-            # Delete all records from the collection
-            delete_result = db.file_records.delete_many({})
-            print(f"Deleted {delete_result.deleted_count} records from file_records.")
-
-            # Delete all files from GridFS
-            files_deleted = 0
+            db.file_records.delete_many({})
             for file in fs.find():
                 fs.delete(file._id)
-                files_deleted += 1
-            print(f"Deleted {files_deleted} files from GridFS.")
-
-            print("All files cleared from the database and GridFS.")
             return jsonify({'message': 'All files have been cleared.'})
-
         except Exception as e:
-            print("Error clearing files:", e)
             return jsonify({'error': str(e)}), 500
 
-        
-        
     @app.route('/file/<file_id>/<plot_type>', methods=['GET'])
     def get_file_plot(file_id, plot_type):
-        """
-        Retrieves a requested plot (spectrogram, time domain, frequency domain, or IQ plot) from GridFS.
-        """
+        """Retrieves a requested plot (spectrogram, time domain, frequency domain, or IQ plot) from GridFS."""
         try:
             if not ObjectId.is_valid(file_id):
                 return jsonify({'error': 'Invalid file ID format'}), 400  
 
             file_record = db.file_records.find_one({"_id": ObjectId(file_id)})
-            if not file_record:
-                return jsonify({'error': 'File not found'}), 404
-
-            # Map plot type to the correct GridFS file ID
-            plot_file_id = file_record.get(f"{plot_type}_file_id")
-            if not plot_file_id:
+            if not file_record or f"{plot_type}_file_id" not in file_record:
                 return jsonify({'error': f'{plot_type} file not found'}), 404
 
-            # Fetch from GridFS
-            plot_file = fs.get(ObjectId(plot_file_id))
-            plot_data = plot_file.read()
+            # Fetch the file from GridFS
+            plot_file = fs.get(ObjectId(file_record[f"{plot_type}_file_id"]))
+            return jsonify({'image': base64.b64encode(plot_file.read()).decode('utf-8')})
 
-            # Convert to base64 and return it
-            encoded_img = base64.b64encode(plot_data).decode('utf-8')
-            return jsonify({'image': encoded_img})
-
+        except gridfs_errors.NoFile:
+            return jsonify({'error': f'{plot_type} file does not exist in GridFS'}), 404
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+
+
+    import json
+
+    @app.route('/metadata/<file_id>', methods=['GET'])
+    def get_metadata(file_id):
+        """Fetch metadata for a given file."""
+        if not ObjectId.is_valid(file_id):
+            return jsonify({'error': 'Invalid file ID format'}), 400  
+
+        file_record = db.file_records.find_one({"_id": ObjectId(file_id)})
+        if not file_record:
+            return jsonify({'error': 'File not found'}), 404
+
+        # ✅ Ensure meta_file_id exists in file_record
+        if "meta_file_id" not in file_record:
+            return jsonify({'error': 'meta_file_id not found in record'}), 400
+
+        try:
+            # ✅ Fetch the metadata file from GridFS
+            meta_file = fs.get(ObjectId(file_record["meta_file_id"]))
+
+            # ✅ Read and decode metadata
+            meta_content = meta_file.read().decode('utf-8')  # Keep this as a string!
+
+            # ✅ Pass the JSON string to SigMF (not a dict!)
+            sigmf_metadata = SigMF(meta_content)  # 🚀 Pass JSON string, not dict!
+
+        except gridfs_errors.NoFile:
+            return jsonify({'error': 'Metadata file not found in GridFS'}), 404
+        except json.JSONDecodeError:
+            return jsonify({'error': 'Failed to parse metadata JSON'}), 400
+        except Exception as e:
+            return jsonify({'error': f'Error processing SigMF: {str(e)}'}), 500
+
+        # ✅ Return extracted metadata
+        metadata = {
+            "datatype": sigmf_metadata.datatype,
+            "sample_rate": sigmf_metadata.sample_rate,
+            "author": sigmf_metadata.author,
+            "hardware": sigmf_metadata.hardware,
+            "offset": sigmf_metadata.offset,
+            "recorder": sigmf_metadata.recorder,
+            "datetime": sigmf_metadata.datetime,
+            "center_frequency": sigmf_metadata.center_frequency,
+            "sample_start": sigmf_metadata.sample_start,
+        }
+
+        return jsonify(metadata)
+
 
 
     return app

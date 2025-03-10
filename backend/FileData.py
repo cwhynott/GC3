@@ -7,20 +7,25 @@
 
 import SigMF
 
-class FileData():
-    def __init__(self, raw_data_filename, fft, sigmf):
+class FileData:
+    def __init__(self, original_name, sigmf_metadata, pxx_csv_file_id, plot_ids, fft=1024):
         """
-            Description: Initializes FileData object.
-            :param raw_data_filename: filename of uploaded iq data file
-            :param sigmf: SigMF class object created from associated metadata file
-            :param fft: set FFT value of associated spectrogram
+        Initializes FileData object.
+        :param original_name: Original filename without extension
+        :param sigmf_metadata: SigMF metadata object
+        :param pxx_csv_file_id: File ID of the power spectral density (Pxx) CSV file
+        :param plot_ids: Dictionary containing file IDs for various plots
+        :param fft: FFT size for spectrogram processing (default: 1024)
         """
-        file_basename = raw_data_filename.split(".")[0]
-        self.raw_data_filename = raw_data_filename
-        self.csv_filename = f"{file_basename}.csv"
-        self.spectrogram_filename = f"{file_basename}_spectrogram.png"
-        self.iq_plot_filename = f"{file_basename}_iq_plot.png"
-        self.time_domain_filename = f"{file_basename}_time_domain.png"
-        self.freq_domain_filename = f"{file_basename}_freq_domain.png"
-        self.sigmf = sigmf
+        self.filename = original_name
+        self.raw_data_file_id = str(plot_ids["raw_data"]) if "raw_data" in plot_ids else None
+        self.csv_file_id = str(pxx_csv_file_id)
+        self.spectrogram_file_id = str(plot_ids["spectrogram"])
+        self.iq_plot_file_id = str(plot_ids["iq_plot"])
+        self.time_domain_file_id = str(plot_ids["time_domain"])
+        self.freq_domain_file_id = str(plot_ids["freq_domain"])
+        self.metadata = sigmf_metadata.__dict__
+
+        # Additional metadata
+        self.sigmf = sigmf_metadata.__dict__
         self.fft = fft

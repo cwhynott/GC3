@@ -6,16 +6,21 @@ interface SavedFile {
   filename: string;
 }
 
-function FileHandle() {
+interface FileHandleProps {
+  fileId: string | null;
+  onFileSelect: (fileId: string) => void;
+}
+
+const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
   // State variables
   const [selectedCFile, setSelectedCFile] = useState<File | null>(null);
   const [selectedMetaFile, setSelectedMetaFile] = useState<File | null>(null);
   const [savedFiles, setSavedFiles] = useState<SavedFile[]>([]);
-  const [statusMessage, setStatusMessage] = useState<string>('Please upload a .cfile and .sigmf-meta');
+  const [statusMessage, setStatusMessage] = useState<string>('Please upload a .cfile and .sigmf-meta file');
   const [selectedCFileName, setSelectedCFileName] = useState<string | null>(null);
   const [selectedMetaFileName, setSelectedMetaFileName] = useState<string | null>(null);
-  const [fileId, setFileId] = useState<string | null>(null);
-  
+  const [dots, setDots] = useState<string>(''); // Track the dots
+
 
   // State for tab switching
   const [activeTab, setActiveTab] = useState<string>('spectrogram');
@@ -25,6 +30,12 @@ function FileHandle() {
     freq_domain: null,
     iq_plot: null,
   });
+
+  useEffect(() => {
+    if (fileId) {
+      fetchPlots(fileId);
+    }
+  }, [fileId]);
 
   // Handle .cfile selection
   const handleCFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -40,22 +51,16 @@ function FileHandle() {
 
     setSelectedCFile(file);
     setSelectedCFileName(file.name);
-    
-    setStatusMessage('Now select and upload a corresponding .sigmf-meta file.');
+
+    setStatusMessage(selectedMetaFile ? 'Ready to upload both files.' : 'Now select and upload a .sigmf-meta file.');
   };
 
   // Handle .sigmf-meta file selection
   const handleMetaFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
 
-    if (!selectedCFile) {
-      setStatusMessage('Please upload a .cfile first.');
-      event.target.value = ''; // Reset file input
-      return;
-    }
-
     if (!file || !file.name.endsWith('.sigmf-meta')) {
-      setStatusMessage('Invalid file type. Please select a .sigmf-meta file.');
+      setStatusMessage('Invalid file type. Please select a .sigmf file.');
       setSelectedMetaFile(null);
       setSelectedMetaFileName(null);
       event.target.value = ''; // Reset file input
@@ -64,7 +69,9 @@ function FileHandle() {
 
     setSelectedMetaFile(file);
     setSelectedMetaFileName(file.name);
-    setStatusMessage('Ready to upload both files');
+
+    setStatusMessage(selectedCFile ? 'Ready to upload both files.' : 'Now select and upload a .cfile.');
+
   };
 
   // Handle file upload
@@ -72,28 +79,34 @@ function FileHandle() {
     if (!selectedCFile || !selectedMetaFile) {
       return setStatusMessage('Both .cfile and .sigmf-meta files are required.');
     }
-  
-    setStatusMessage('Uploading files...');
+
+    updateStatusMessage('Uploading files');
     try {
       const formData = new FormData();
       formData.append('cfile', selectedCFile);
       formData.append('metaFile', selectedMetaFile);
-  
+
       const response = await fetch('http://127.0.0.1:5000/upload', { method: 'POST', body: formData });
       const result = await response.json();
-  
+
       if (result.error) return setStatusMessage(`Error: ${result.error}`);
-  
+
       console.log("Upload Response:", result); // ✅ Debugging log
-  
-      setFileId(result.file_id);
-  
+
+      onFileSelect(result.file_id);
+
+      // ✅ Immediately add uploaded file to saved list
+      setSavedFiles((prevFiles) => [
+        ...prevFiles,
+        { _id: result.file_id, filename: selectedCFile.name }
+      ]);
+
       // ✅ Immediately set spectrogram image
       if (result.spectrogram) {
         setPlotImages((prevImages) => ({ ...prevImages, spectrogram: result.spectrogram }));
         setActiveTab('spectrogram'); // ✅ Ensure spectrogram is shown first
       }
-  
+
       fetchPlots(result.file_id);
       setStatusMessage(result.message);
     } catch (error) {
@@ -101,7 +114,22 @@ function FileHandle() {
     }
   };
   
-
+  
+  // **Handle clearing only selected files**
+  const handleClearSelectedFiles = () => {
+    setSelectedCFile(null);
+    setSelectedMetaFile(null);
+    setSelectedCFileName(null);
+    setSelectedMetaFileName(null);
+    setPlotImages({
+      spectrogram: null,
+      time_domain: null,
+      freq_domain: null,
+      iq_plot: null,
+    });
+    setStatusMessage('File selection cleared. Please upload new files.');
+  };
+  
   // Fetch and store images dynamically
   const fetchPlots = async (fileId: string) => {
     const plotTypes = ['spectrogram', 'time_domain', 'freq_domain', 'iq_plot'];
@@ -132,33 +160,9 @@ function FileHandle() {
       }
     }
   };
-  
-  
-
-  // Handle file save to database
-  const handleSave = async () => {
-    if (!selectedCFile || !selectedMetaFile) {
-      return setStatusMessage('Both .cfile and .sigmf-meta files must be selected before saving.');
-    }
-
-    setStatusMessage('Saving files...');
-    try {
-      const formData = new FormData();
-      formData.append('cfile', selectedCFile);
-      formData.append('metaFile', selectedMetaFile);
-
-      await fetch('http://127.0.0.1:5000/save', { method: 'POST', body: formData });
-
-      fetchSavedFiles();
-      setStatusMessage('Files saved to database successfully.');
-    } catch (error) {
-      setStatusMessage('Failed to save files.');
-    }
-  };
-
 
   const handleClearFiles = async () => {
-    setStatusMessage('Clearing all saved files...');
+    updateStatusMessage("Clearing all saved files");
     try {
       const response = await fetch('http://127.0.0.1:5000/refresh', { method: 'POST' });
   
@@ -172,7 +176,7 @@ function FileHandle() {
       // Delay to ensure backend clears before fetching updated list
       setTimeout(() => {
         fetchSavedFiles();
-        setStatusMessage('All saved files cleared.');
+        setStatusMessage('All files cleared.');
       }, 500); // Adjust delay if necessary
   
     } catch (error) {
@@ -180,23 +184,19 @@ function FileHandle() {
       setStatusMessage('Failed to clear saved files.');
     }
   };
-  
 
   // Handle loading a saved file
   const handleLoadFile = async (fileId: string) => {
-    setFileId(fileId);
     setActiveTab('spectrogram');  // ✅ Ensure spectrogram is shown first
     setStatusMessage('Loading file...');
     fetchPlots(fileId);
     setStatusMessage('Files loaded successfully');
+    onFileSelect(fileId);
   };  
-
 
   // Fetch saved files from the database
   const fetchSavedFiles = async () => {
-    try {
-      console.log("Fetching saved files..."); // ✅ Debugging log
-  
+    try {  
       const response = await fetch('http://127.0.0.1:5000/files');
       const result = await response.json();
   
@@ -204,10 +204,7 @@ function FileHandle() {
         console.error("Error fetching saved files:", result.error);
         setStatusMessage(`Error: ${result.error}`);
         return;
-      }
-  
-      console.log("Fetched saved files:", result.files); // ✅ Debugging log
-  
+      }  
       if (Array.isArray(result.files)) {
         setSavedFiles(result.files);
       } else {
@@ -220,61 +217,67 @@ function FileHandle() {
     }
   };
   
-  
-
   // Fetch saved files on component mount
   useEffect(() => {
     fetchSavedFiles();
-    setStatusMessage('Please upload a .cfile');
+    setStatusMessage('Please upload a .cfile and .sigmf file');
   }, []);
+
+  // Dot Animation Effect: Runs whenever statusMessage changes
+  useEffect(() => {
+    if (statusMessage === "Uploading files" || statusMessage === "Clearing all saved files...") {
+      setDots(""); // Reset dots when statusMessage starts
+  
+      const interval = setInterval(() => {
+        setDots((prevDots) => (prevDots.length === 3 ? "" : prevDots + ".")); // Cycle . → .. → ... → .
+      }, 500);
+  
+      return () => clearInterval(interval); // Cleanup on unmount or message change
+    } else {
+      setDots(""); // Ensure no dots for other messages
+    }
+  }, [statusMessage]);
+  
+  const updateStatusMessage = (message: string) => {
+    setStatusMessage(message);
+    if (message !== "Uploading files" && message !== "Clearing all saved files...") {
+      setDots(""); // Stop dots animation for other messages
+    }
+  };
+  
+  
 
   return (
     <main className="enhanced-app-container">
-      {statusMessage && <p className="status-banner">{statusMessage}</p>}
+      <p className="status-banner">{statusMessage}{dots}</p>
+
 
       {/* File Selection - Stacked vertically */}
       <div className="file-selection">
         {/* Custom Button for CFile */}
         <div className="file-row">
-          <label htmlFor="cfile-upload" className="custom-file-upload">
-            Choose CFile
-          </label>
-          <input
-            id="cfile-upload"
-            type="file"
-            accept=".cfile"
-            onChange={handleCFileChange}
-            className="file-input"
-          />
-          {selectedCFileName && <span className="file-name">{selectedCFileName}</span>}
+          <label htmlFor="cfile-upload" className="custom-file-upload">Choose .cfile</label>
+          <input id="cfile-upload" type="file" accept=".cfile" onChange={handleCFileChange} className="file-input" />
+          <span className="file-name">{selectedCFileName || "No file selected"}</span>
         </div>
 
-        {/* Custom Button for Metadata File */}
         <div className="file-row">
-          <label htmlFor="meta-upload" className="custom-file-upload">
-            Choose SIGMF
-          </label>
-          <input
-            id="meta-upload"
-            type="file"
-            accept=".sigmf-meta, .sigmf, .sigmf-data"
-            onChange={handleMetaFileChange}
-            className="file-input"
-            disabled={!selectedCFile} // Prevent selection before CFile
-          />
-          {selectedMetaFileName && <span className="file-name">{selectedMetaFileName}</span>}
+          <label htmlFor="meta-upload" className="custom-file-upload">Choose .sigmf</label>
+          <input id="meta-upload" type="file" accept=".sigmf-meta" onChange={handleMetaFileChange} className="file-input" />
+          <span className="file-name">{selectedMetaFileName || "No file selected"}</span>
+
         </div>
       </div>
-
-
 
       {/* File Actions - Centered horizontally */}
       <div className="file-actions">
         <button onClick={handleUpload} className="btn upload-btn" disabled={!selectedCFile || !selectedMetaFile}>
           Upload
         </button>
-        <button onClick={handleSave} className="btn save-btn">Save to Database</button>
-        <button onClick={handleClearFiles} className="btn clear-btn">Clear All Saved Files</button>
+        <button onClick={handleClearSelectedFiles} className="btn clear-files-btn" disabled={!selectedCFile && !selectedMetaFile}>
+          Clear Selected Files
+        </button>
+        <button onClick={handleClearFiles} className="btn clear-btn">Clear All Files</button>
       </div>
       {/* Tabbed Interface for Plots */}
       {fileId && (
@@ -298,7 +301,7 @@ function FileHandle() {
 
       {/* Saved Files Section */}
       <div className="saved-files">
-        <h2 style={{ color: '#2c3e50' }}>Saved Files</h2>
+        <h2 style={{ color: '#2c3e50' }}>All Files</h2>
         <ul>
           {savedFiles.length > 0 ? (
             savedFiles.map((file) => (
@@ -312,6 +315,7 @@ function FileHandle() {
           )}
         </ul>
       </div>
+
     </main>
   );
 }
