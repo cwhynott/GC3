@@ -76,8 +76,6 @@ def create_app():
             'message': 'All files uploaded and saved successfully'
         })
 
-
-
     def generate_plots(original_name, iq_data, sigmf_metadata):
         """Generates and stores plots in GridFS."""
         plots = {}

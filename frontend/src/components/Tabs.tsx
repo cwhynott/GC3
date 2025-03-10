@@ -53,7 +53,7 @@ const DisplayTabs: React.FC = () => {
   return (
     <Box sx={{ width: '100%' }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={value} onChange={handleChange} variant="scrollable" scrollButtons="auto">
+        <Tabs value={value} onChange={handleChange} variant="scrollable" scrollButtons="auto" sx={{height:"30px"}}>
           {tabs.map((tab, index) => (
             <Tab
               key={index}

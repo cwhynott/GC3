@@ -6,7 +6,7 @@
  */
 
 #root {
-  width: 1280px;
+  width: 100%;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
@@ -317,23 +317,36 @@
 
 /* Custom File Upload Button */
 .custom-file-upload {
-  display: inline-block;
-  width: 150px; /* Ensures both buttons have the same width */
-  background-color: #007BFF; /* Blue */
-  color: white;
-  padding: 10px 15px;
-  font-size: 16px;
-  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  background-color: #f8f9fa;
+  color: #495057;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  border-radius: 5px;
+  border-radius: 6px;
   text-align: center;
-  transition: background-color 0.3s ease-in-out;
-  border: none;
+  transition: all 0.3s ease-in-out;
+  border: 2px dashed #dee2e6;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Add upload icon using pseudo-element */
+.custom-file-upload::before {
+  content: "📁";
+  margin-right: 8px;
+  font-size: 16px;
 }
 
 /* Hover Effect */
 .custom-file-upload:hover {
-  background-color: #0056b3;
+  color: #007bff;
+  background-color: #e9ecef;
+  border-color: #007bff;
 }
 
 /* Style for displaying saved file names */
