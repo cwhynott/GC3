@@ -494,5 +494,105 @@
 }
 
 
+/* Statistics component styles */
+.statistics-container {
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  max-width: 1000px;
+  margin: 0 auto;
+}
 
+.statistics-header {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
 
+/* Layout for metadata sections */
+.metadata-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Each box (e.g., General Info or Stats) */
+.metadata-section {
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  flex: 1 1 45%;
+  min-width: 300px;
+  box-sizing: border-box;
+}
+
+.section-title {
+  color: #34495e;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 0.5rem;
+}
+
+/* Grid for metadata key-value pairs */
+.metadata-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.metadata-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.metadata-key {
+  font-weight: 600;
+  color: #7f8c8d;
+}
+
+.metadata-value {
+  color: #2c3e50;
+  text-align: right;
+  font-size: 0.9rem;
+  max-width: 60%;
+  word-wrap: break-word;
+}
+
+/* Messaging */
+.loading-message,
+.no-file-message,
+.error-message {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1rem;
+}
+
+.loading-message,
+.no-file-message {
+  color: #7f8c8d;
+}
+
+.error-message {
+  color: #e74c3c;
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .metadata-container {
+    flex-direction: column;
+  }
+
+  .metadata-section {
+    flex: 1 1 100%;
+  }
+}
