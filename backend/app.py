@@ -178,6 +178,51 @@ def create_app():
 
         pxx_csv_data.seek(0)
         return fs.put(pxx_csv_data.getvalue().encode(), filename=f"{original_name}_pxx.csv")
+    
+    @app.route('/file/<file_id>', methods=['DELETE'])
+    def delete_file(file_id):
+        """Deletes a file and its associated data (plots, Pxx file, metadata)."""
+        try:
+            print("DELETING.....")
+            
+            # Retrieve the file record from the database
+            file_record = db.file_records.find_one({"_id": ObjectId(file_id)})
+            if not file_record:
+                print("file not found")
+                return jsonify({"error": "File not found"}), 404
+            
+            print("File Record Attributes:")
+            for key, value in file_record.items():
+                print(f"{key}: {value}")
+
+            print("HELLOOOOOOOOOOO")
+            # Delete PXX file
+            try:
+                print(ObjectId(file_record["csv_file_id"]))
+                fs.delete(ObjectId(file_record["csv_file_id"]))
+                print("PXX deleted")
+                print(ObjectId(file_record["iq_plot_file_id"]))
+                fs.delete(ObjectId(file_record["iq_plot_file_id"]))
+                print("IQ plot deleted")
+                fs.delete(ObjectId(file_record["spectrogram_file_id"]))
+                print("Spectrogram deleted")
+                fs.delete(ObjectId(file_record["time_domain_file_id"]))
+                print("Time domain plot deleted")
+                fs.delete(ObjectId(file_record["freq_domain_file_id"]))
+                print("Frequency domain plot deleted")
+                fs.delete(ObjectId(file_record["meta_file_id"]))
+                print("Metadata file deleted")
+                
+            except gridfs_errors.NoFile:
+                print(f"file not found.")
+
+
+            db.file_records.delete_one({"_id": ObjectId(file_id)})
+
+            return jsonify({"message": f"File with ID {file_id} and its associated data deleted successfully."})
+
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
 
     @app.route('/files', methods=['GET'])
     def get_files():
