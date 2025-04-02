@@ -1,8 +1,6 @@
 /** 
  * CS-410: Frontend for uploading files, generating spectrograms, and interacting with MongoDB
  * @file app.tsx
- * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
- * @collaborators None
  */
 
 import { useState } from 'react';
@@ -31,17 +29,8 @@ function App() {
       <div className="upload-metadata-wrapper">
         <DisplayTabs plot={plot} />
       </div>
-
-      {/* ✅ Spectrogram Display at the Bottom */}
-      {plot && (
-        <div className="spectrogram-container">
-          <img src={`data:image/png;base64,${plot}`} alt="Generated Spectrogram" />
-        </div>
-      )}
     </main>
   );
 }
 
 export default App;
-
-/* test */
