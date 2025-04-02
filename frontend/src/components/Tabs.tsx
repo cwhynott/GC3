@@ -46,8 +46,12 @@ const DisplayTabs: React.FC = () => {
     }
   };
 
-  const updateFileId = (tabId: number, newFileId: string) => {
-    setTabs(prevTabs => prevTabs.map(tab => (tab.id === tabId ? { ...tab, fileId: newFileId } : tab)));
+  const updateFileId = (tabId: number, newFileId: string | null) => {
+    setTabs(prevTabs =>
+      prevTabs.map(tab =>
+        tab.id === tabId ? { ...tab, fileId: newFileId } : tab
+      )
+    );
   };
 
   return (
@@ -73,9 +77,16 @@ const DisplayTabs: React.FC = () => {
       {tabs.map((tab, index) => (
         <CustomTabPanel key={index} value={value} index={index}>
           <div className="tab-content">
-            <div className="statistics-container">
-              <Statistics fileId={tab.fileId} />
-            </div>
+            {/* Conditionally render Statistics only if fileId exists */}
+            {tab.fileId ? (
+              <div className="statistics-container">
+                <Statistics fileId={tab.fileId} />
+              </div>
+            ) : (
+              <div className="statistics-container">
+                <p>No file selected. Please select a file to view statistics.</p>
+              </div>
+            )}
             <div className="file-handle-container">
               <FileHandle fileId={tab.fileId} onFileSelect={(fileId) => updateFileId(tab.id, fileId)} />
             </div>

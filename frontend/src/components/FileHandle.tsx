@@ -10,7 +10,7 @@ interface SavedFile {
 
 interface FileHandleProps {
   fileId: string | null;
-  onFileSelect: (fileId: string) => void;
+  onFileSelect: (fileId: string | null) => void;
 }
 
 const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
@@ -213,6 +213,8 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
           iq_plot: null,
         });
         setCurrentFileId(null); // Reset the selected file
+        onFileSelect(null); // Notify parent component to reset fileId
+
       }
   
       // Refresh the saved files list
