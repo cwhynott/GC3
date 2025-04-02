@@ -285,6 +285,78 @@ def create_app():
 
         return jsonify(metadata)
 
+    def generate_data(rows, cols, num_transmitters, transmitter_mean, transmitter_sd, noise_mean, noise_sd, bandwidth, active_time, placement_method):
+        # Generate the background noise matrix
+        matrix = np.random.normal(loc=noise_mean, scale=noise_sd, size=(rows, cols))
+
+        transmitters = []
+        center_freq = cols // 2  # Center frequency bin
+
+        def is_overlapping(start_time, start_freq):
+            for t_start, f_start in transmitters:
+                if (start_time < t_start + active_time and start_time + active_time > t_start and
+                    start_freq < f_start + bandwidth and start_freq + bandwidth > f_start):
+                    return True
+            return False
+        
+        if placement_method == "random":
+            for _ in range(num_transmitters):
+                while True:
+                    start_time = np.random.randint(0, rows - active_time + 1)
+                    start_freq = center_freq - (bandwidth // 2)  # Center the transmitter around the middle frequency
+                    if not is_overlapping(start_time, start_freq):
+                        transmitters.append((start_time, start_freq))
+                        break
+        elif placement_method == "equally_spaced":
+            # Calculate the margin and spacing
+            margin = rows // (num_transmitters + 1)  # Leave equal margins at the top and bottom
+            spacing = (rows - 2 * margin) // (num_transmitters - 1)  # Space transmitters evenly within the remaining space
+
+            for i in range(num_transmitters):
+                start_time = margin + i * spacing
+                start_freq = center_freq - (bandwidth // 2)  # Center the transmitter around the middle frequency
+                transmitters.append((start_time, start_freq))
+
+        # Inject the transmitter signal
+        for start_time, start_freq in transmitters:
+            for t in range(start_time, start_time + active_time):
+                for f in range(start_freq, start_freq + bandwidth):
+                    signal = np.random.normal(loc=transmitter_mean, scale=transmitter_sd)
+                    matrix[t][f] += signal
+
+        # Generate and return the plot as base64
+        plt.figure(figsize=(10, 6))
+        plt.imshow(matrix, aspect='auto', cmap='viridis')
+        plt.title('Generated Data Matrix')
+        plt.xlabel("Frequency")
+        plt.ylabel("Time")
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+        plot_data = base64.b64encode(buf.getvalue()).decode('utf-8')
+        return plot_data
+
+    @app.route('/generate', methods=['POST'])
+    def generate_data_endpoint():
+        data = request.json
+        rows = data['rows']
+        cols = data['cols']
+        num_transmitters = data['numTransmitters']
+        transmitter_mean = data['transmitterMean']
+        transmitter_sd = data['transmitterSd']
+        noise_mean = data['noiseMean']
+        noise_sd = data['noiseSd']
+        bandwidth = data['bandwidth']
+        active_time = data['activeTime']
+        placement_method = data['placementMethod']  # New parameter
+
+        try:
+            plot_data = generate_data(rows, cols, num_transmitters, transmitter_mean, transmitter_sd, noise_mean, noise_sd,
+                                    bandwidth, active_time, placement_method)
+            return jsonify({'message': 'Data generated successfully', 'plot': plot_data}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
 
     return app
