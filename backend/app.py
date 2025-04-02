@@ -261,7 +261,7 @@ def create_app():
             meta_content = meta_file.read().decode('utf-8')  # Keep this as a string!
 
             # ✅ Pass the JSON string to SigMF (not a dict!)
-            sigmf_metadata = SigMF(meta_content)  # 🚀 Pass JSON string, not dict!
+            sigmf_metadata = SigMF(io.StringIO(meta_content))
 
         except gridfs_errors.NoFile:
             return jsonify({'error': 'Metadata file not found in GridFS'}), 404
