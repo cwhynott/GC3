@@ -349,38 +349,6 @@
   border-color: #007bff;
 }
 
-/* Style for displaying saved file names */
-.file-name {
-  font-size: 14px;
-  color: black; /* Ensure text is black */
-  font-weight: bold;
-  max-width: none; /* ✅ Allow full filename display */
-  overflow: visible; /* ✅ Ensure text is fully visible */
-  white-space: normal; /* ✅ Allow wrapping */
-  word-break: break-all; /* ✅ Prevent overflow */
-}
-
-/* Make sure saved file list doesn't cut off filenames */
-.saved-files ul {
-  list-style-type: none;
-  padding: 0;
-  max-width: 100%; /* ✅ Ensure the container is wide enough */
-}
-
-/* Ensure the saved files list items are properly spaced */
-.saved-files li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 14px;
-  color: black;
-  font-weight: bold;
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
-  max-width: 100%; /* ✅ Ensure full width is used */
-}
-
-
 /* Ensure both buttons are aligned properly */
 .file-row {
   display: flex;
@@ -421,13 +389,6 @@
   border: 2px solid #e0e0e0;
 }
 
-.saved-files {
-  background-color: #fff;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .app-logo {
   max-height: 100px;
   width: auto;
@@ -461,29 +422,6 @@
 /* Hover effect */
 .tabs button:hover {
   background-color: #0056b3; /* 🔵 Darker blue on hover */
-}
-
-/* Style for Load buttons in the Saved Files section */
-.saved-files button {
-  background-color: #fd7e14; /* 🟠 Orange */
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  margin-left: 10px;
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.3s ease-in-out;
-}
-
-/* Hover effect */
-.saved-files button:hover {
-  background-color: #e06c10; /* 🟠 Darker Orange */
-}
-
-/* Active effect when clicked */
-.saved-files button:active {
-  background-color: #c75c0a; /* 🟠 Even Darker Orange */
 }
 
 .plot-image {
@@ -585,6 +523,110 @@
 .error-message {
   color: #e74c3c;
 }
+
+/* SAVED FILES FORMATING */
+/* Style for displaying saved file names */
+.file-name {
+  font-size: 14px;
+  color: black; /* Ensure text is black */
+  font-weight: bold;
+  max-width: none; /* ✅ Allow full filename display */
+  overflow: visible; /* ✅ Ensure text is fully visible */
+  white-space: normal; /* ✅ Allow wrapping */
+  word-break: break-all; /* ✅ Prevent overflow */
+}
+
+/* Make sure saved file list doesn't cut off filenames */
+.saved-files ul {
+  list-style-type: none;
+  padding: 0;
+  max-width: 100%; /* ✅ Ensure the container is wide enough */
+}
+
+/* Ensure the saved files list items are properly spaced */
+.saved-files li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: black;
+  font-weight: bold;
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+  max-width: 100%; /* ✅ Ensure full width is used */
+}
+
+/* Style for Load buttons in the Saved Files section */
+.saved-files button {
+  background-color: #fd7e14; /* 🟠 Orange */
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  margin-left: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease-in-out;
+}
+
+/* Hover effect */
+.saved-files button:hover {
+  background-color: #e06c10; /* 🟠 Darker Orange */
+}
+
+/* Active effect when clicked */
+.saved-files button:active {
+  background-color: #c75c0a; /* 🟠 Even Darker Orange */
+}
+
+/* Style for the delete button */
+.saved-files .delete-btn {
+  background-color: red;
+  border: none;
+  border-radius: 4px;
+  padding: 8px;
+  cursor: pointer;
+  margin-right: 8px; /* Space between the button and the file name */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Style for the trash can icon */
+.trash-icon {
+  width: 16px;
+  height: 16px;
+  filter: invert(100%); /* Makes the icon white if it's a black PNG */
+}
+
+/* Optional: Add hover effect for the delete button */
+.saved-files .delete-btn:hover {
+  background-color: darkred;
+}
+
+/* Style for the search bar */
+.search-bar {
+  width: 80%; /* Reduce the width to make it smaller */
+  padding: 8px; /* Decrease padding for a smaller height */
+  margin-bottom: 10px; /* Adjust spacing below the search bar */
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px; /* Reduce font size */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.search-bar:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+
+
+
+
+
+
 
 /* Responsive layout */
 @media (max-width: 768px) {

@@ -1,5 +1,7 @@
 import { useState, useEffect, ChangeEvent } from 'react';
 import '../App.css';
+import SavedFiles from './SavedFiles';
+
 
 interface SavedFile {
   _id: string;
@@ -13,6 +15,7 @@ interface FileHandleProps {
 
 const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
   // State variables
+  const [currentFileId, setCurrentFileId] = useState<string | null>(fileId); // Track the currently selected file ID
   const [selectedCFile, setSelectedCFile] = useState<File | null>(null);
   const [selectedMetaFile, setSelectedMetaFile] = useState<File | null>(null);
   const [savedFiles, setSavedFiles] = useState<SavedFile[]>([]);
@@ -107,6 +110,7 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
         setActiveTab('spectrogram'); // ✅ Ensure spectrogram is shown first
       }
 
+      setCurrentFileId(result.file_id);
       fetchPlots(result.file_id);
       setStatusMessage(result.message);
     } catch (error) {
@@ -121,6 +125,7 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
     setSelectedMetaFile(null);
     setSelectedCFileName(null);
     setSelectedMetaFileName(null);
+    setCurrentFileId(null);
     setPlotImages({
       spectrogram: null,
       time_domain: null,
@@ -185,12 +190,49 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
     }
   };
 
+  // Handle single file deletion
+  const handleSingleDelete = async (fileId: string) => {
+    const userConfirmed = window.confirm(`Are you sure you want to delete this file?`);
+    if (!userConfirmed) {
+      return; // Exit if the user cancels
+    }
+  
+    try {
+      const response = await fetch(`http://127.0.0.1:5000/file/${fileId}`, { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error('Failed to delete file.');
+      }
+  
+      // If the deleted file is currently open, clear the graphs and reset the fileId
+      if (fileId === currentFileId) {
+        setActiveTab(''); // Reset the active tab
+        setPlotImages({
+          spectrogram: null,
+          time_domain: null,
+          freq_domain: null,
+          iq_plot: null,
+        });
+        setCurrentFileId(null); // Reset the selected file
+      }
+  
+      // Refresh the saved files list
+      setTimeout(() => {
+        fetchSavedFiles();
+        setStatusMessage('File successfully deleted.');
+      }, 500); // Adjust delay if necessary
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      setStatusMessage('Failed to delete file.');
+    }
+  };
+
   // Handle loading a saved file
   const handleLoadFile = async (fileId: string) => {
     setActiveTab('spectrogram');  // ✅ Ensure spectrogram is shown first
     setStatusMessage('Loading file...');
     fetchPlots(fileId);
     setStatusMessage('Files loaded successfully');
+    setCurrentFileId(fileId);
     onFileSelect(fileId);
   };  
 
@@ -249,73 +291,96 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
 
   return (
     <main className="enhanced-app-container">
+      {/* Status Banner */}
       <p className="status-banner">{statusMessage}{dots}</p>
-
-
+  
       {/* File Selection - Stacked vertically */}
       <div className="file-selection">
-        {/* Custom Button for CFile */}
+        {/* Custom Button for .cfile */}
         <div className="file-row">
           <label htmlFor="cfile-upload" className="custom-file-upload">Choose .cfile</label>
-          <input id="cfile-upload" type="file" accept=".cfile" onChange={handleCFileChange} className="file-input" />
+          <input
+            id="cfile-upload"
+            type="file"
+            accept=".cfile"
+            onChange={handleCFileChange}
+            className="file-input"
+          />
           <span className="file-name">{selectedCFileName || "No file selected"}</span>
         </div>
-
+  
+        {/* Custom Button for .sigmf-meta */}
         <div className="file-row">
           <label htmlFor="meta-upload" className="custom-file-upload">Choose .sigmf</label>
-          <input id="meta-upload" type="file" accept=".sigmf-meta" onChange={handleMetaFileChange} className="file-input" />
+          <input
+            id="meta-upload"
+            type="file"
+            accept=".sigmf-meta"
+            onChange={handleMetaFileChange}
+            className="file-input"
+          />
           <span className="file-name">{selectedMetaFileName || "No file selected"}</span>
-
         </div>
       </div>
-
+  
       {/* File Actions - Centered horizontally */}
       <div className="file-actions">
-        <button onClick={handleUpload} className="btn upload-btn" disabled={!selectedCFile || !selectedMetaFile}>
+        <button
+          onClick={handleUpload}
+          className="btn upload-btn"
+          disabled={!selectedCFile || !selectedMetaFile}
+        >
           Upload
         </button>
-        <button onClick={handleClearSelectedFiles} className="btn clear-files-btn" disabled={!selectedCFile && !selectedMetaFile}>
+        <button
+          onClick={handleClearSelectedFiles}
+          className="btn clear-files-btn"
+          disabled={!selectedCFile && !selectedMetaFile}
+        >
           Clear Selected Files
         </button>
-        <button onClick={handleClearFiles} className="btn clear-btn">Clear All Files</button>
+        <button
+          onClick={handleClearFiles}
+          className="btn clear-btn"
+        >
+          Clear All Files
+        </button>
       </div>
+  
       {/* Tabbed Interface for Plots */}
-      {fileId && (
+      { currentFileId ? (
         <div className="plot-container">
           <div className="tabs">
             {['spectrogram', 'time_domain', 'freq_domain', 'iq_plot'].map((tab) => (
-              <button key={tab} className={activeTab === tab ? 'active' : ''} onClick={() => setActiveTab(tab)}>
+              <button
+                key={tab}
+                className={activeTab === tab ? 'active' : ''}
+                onClick={() => setActiveTab(tab)}
+              >
                 {tab.replace('_', ' ').toUpperCase()}
               </button>
             ))}
           </div>
-      
-        {/* Display Selected Plot */}
-        {plotImages[activeTab] ? (
-          <img src={`data:image/png;base64,${plotImages[activeTab]}`} alt={activeTab} className="plot-image" />
-        ) : (
-          <p className="status-banner">Loading {activeTab}...</p>
-        )}
-        </div>
-      )}
-
-      {/* Saved Files Section */}
-      <div className="saved-files">
-        <h2 style={{ color: '#2c3e50' }}>All Files</h2>
-        <ul>
-          {savedFiles.length > 0 ? (
-            savedFiles.map((file) => (
-              <li key={file._id}>
-                <span className="file-name">{file.filename}</span> {/* ✅ Ensures filename uses updated styles */}
-                <button onClick={() => handleLoadFile(file._id)}>Load</button>
-              </li>
-            ))
+  
+          {/* Display Selected Plot */}
+          {plotImages[activeTab] ? (
+            <img
+              src={`data:image/png;base64,${plotImages[activeTab]}`}
+              alt={activeTab}
+              className="plot-image"
+            />
           ) : (
-            <li>No files saved.</li>
+            <p className="status-banner">Loading {activeTab}...</p>
           )}
-        </ul>
-      </div>
-
+        </div>
+      ) : null}
+  
+      {/* Saved Files Section */}
+      <SavedFiles
+        savedFiles={savedFiles}
+        onDelete={handleSingleDelete}
+        onLoad={handleLoadFile}
+      />
     </main>
   );
 }
