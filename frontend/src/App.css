@@ -5,7 +5,7 @@
  * @collaborators None
  */
 
-#root {
+ #root {
   width: 100%;
   margin: 0 auto;
   padding: 2rem;
@@ -692,7 +692,7 @@ label {
 }
 
 input[type="radio"] {
-  margin-right: 5px;
+  margin-right: px;
 }
 
 .error-message {
@@ -700,3 +700,150 @@ input[type="radio"] {
   font-size: 0.9rem;
   margin-bottom: 10px;
 }
+
+/* Update these styles for side-by-side layout */
+/* Updated styles for the dual popup layout */
+.dual-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.dual-popup-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 40px; /* Increased gap between popups */
+  max-height: 90vh;
+  max-width: 95vw;
+}
+
+.generate-popup-section {
+  flex: 0 0 auto;
+  position: relative;
+}
+
+.spectrogram-popup-section {
+  flex: 0 0 auto;
+  position: relative;
+}
+
+/* Make the spectrogram popup significantly wider */
+.spectrogram-popup-content {
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 700px !important; /* Increased width from 550px to 700px */
+  min-width: 700px; /* Increased to match width */
+  max-width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  z-index: 999;
+}
+
+/* Also adjust the container to ensure proper spacing */
+.dual-popup-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 50px; /* Increased gap for better separation */
+  max-height: 90vh;
+  max-width: 95vw;
+  padding: 20px; /* Add padding to ensure content doesn't get cut off */
+}
+
+/* Improve the spectrogram image display */
+.spectrogram-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  margin-top: 10px;
+  width: 100%;
+  height: 74vh
+}
+
+.spectrogram-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Improved form styling inside popup */
+.popup-content form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.popup-content label {
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.popup-content input[type="number"] {
+  width: 150px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Clear styling for the headers */
+.popup-header, .spectrogram-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid #eee;
+}
+
+.popup-header h4, .spectrogram-header h4 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+/* Better close button positioning */
+.close-button {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #666;
+  position: absolute;
+  top: 5px;
+  right: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .dual-popup-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .generate-popup-section, .spectrogram-popup-section {
+    width: 95%;
+    margin-bottom: 20px;
+  }
+  
+  .popup-content, .spectrogram-popup-content {
+    width: 90%;
+    min-width: auto;
+  }
+} 

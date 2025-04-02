@@ -27,7 +27,7 @@ function App() {
 
       {/* ✅ Main Layout: Upload Controls + Metadata + Tabs */}
       <div className="upload-metadata-wrapper">
-        <DisplayTabs plot={plot} />
+        <DisplayTabs plot={null} /> {/* We're no longer passing the plot to tabs */}
       </div>
     </main>
   );
