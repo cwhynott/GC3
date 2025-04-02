@@ -298,7 +298,7 @@ def create_app():
                     start_freq < f_start + bandwidth and start_freq + bandwidth > f_start):
                     return True
             return False
-        
+
         if placement_method == "random":
             for _ in range(num_transmitters):
                 while True:
@@ -349,12 +349,12 @@ def create_app():
         noise_sd = data['noiseSd']
         bandwidth = data['bandwidth']
         active_time = data['activeTime']
-        placement_method = data['placementMethod']  # New parameter
+        placement_method = data['placementMethod']
 
         try:
             plot_data = generate_data(rows, cols, num_transmitters, transmitter_mean, transmitter_sd, noise_mean, noise_sd,
                                     bandwidth, active_time, placement_method)
-            return jsonify({'message': 'Data generated successfully', 'plot': plot_data}), 200
+            return jsonify({'plot': plot_data})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
