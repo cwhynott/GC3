@@ -120,7 +120,7 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
   
   
   // **Handle clearing only selected files**
-  const handleClearSelectedFiles = () => {
+  const handleClearCurrentFile = () => {
     setSelectedCFile(null);
     setSelectedMetaFile(null);
     setSelectedCFileName(null);
@@ -132,7 +132,8 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
       freq_domain: null,
       iq_plot: null,
     });
-    setStatusMessage('File selection cleared. Please upload new files.');
+    onFileSelect(null); // Notify parent component to reset fileId
+    setStatusMessage('File cleared. Please upload new files.');
   };
   
   // Fetch and store images dynamically
@@ -335,17 +336,16 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
           Upload
         </button>
         <button
-          onClick={handleClearSelectedFiles}
+          onClick={handleClearCurrentFile}
           className="btn clear-files-btn"
-          disabled={!selectedCFile && !selectedMetaFile}
         >
-          Clear Selected Files
+          Clear Current File
         </button>
         <button
           onClick={handleClearFiles}
           className="btn clear-btn"
         >
-          Clear All Files
+          Delete All Files
         </button>
       </div>
   
