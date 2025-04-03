@@ -622,12 +622,6 @@
 }
 
 
-
-
-
-
-
-
 /* Responsive layout */
 @media (max-width: 768px) {
   .metadata-container {
@@ -641,8 +635,8 @@
 
 .generate-button {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 35%;
+  right: 3%;
   padding: 10px 20px;
   font-size: 1rem;
   font-weight: bold;
@@ -672,16 +666,16 @@
   z-index: 9999;
 }
 
-.popup-content {
+.popup-content, .spectrogram-popup-content {
   background-color: #fff;
-  padding: 20px;
+  padding: 25px; /* Use consistent padding */
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  width: 430px; /* Set a fixed width */
-  max-width: 95%; /* Ensure it doesn't exceed the screen width */
-  height: auto; /* Adjust height based on content */
-  max-height: 90%; /* Prevent it from taking the entire screen height */
-  overflow-y: auto; /* Add scroll if content overflows */
+  position: relative;
+  z-index: 999;
+  height: 80vh !important; /* Force same height */
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .popup-content h4 {
@@ -719,8 +713,9 @@
 
 fieldset {
   border: 1px solid #ccc;
-  padding: 10px;
-  margin-bottom: 15px;
+  padding: 3px;
+  margin-bottom: 10px;
+  padding-right: 10px
 }
 
 legend {
@@ -762,10 +757,11 @@ input[type="radio"] {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  align-items: flex-start;
-  gap: 40px; /* Increased gap between popups */
+  align-items: center; /* Change to center for better alignment */
+  gap: 40px;
   max-height: 90vh;
   max-width: 95vw;
+  padding: 20px;
 }
 
 .generate-popup-section {
@@ -820,6 +816,7 @@ input[type="radio"] {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  transform: scale(1.16);
 }
 
 /* Improved form styling inside popup */
@@ -848,15 +845,18 @@ input[type="radio"] {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-  padding-bottom: 5px;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
   border-bottom: 2px solid #eee;
+  position: relative; /* Ensure positioning context */
+  height: 30px; /* Let height be determined by content */
 }
 
 .popup-header h4, .spectrogram-header h4 {
   margin: 0;
   font-size: 18px;
   color: #333;
+  padding-right: 30px;
 }
 
 /* Better close button positioning */
@@ -867,9 +867,17 @@ input[type="radio"] {
   font-weight: bold;
   cursor: pointer;
   color: #666;
-  position: absolute;
-  top: 5px;
-  right: 10px;
+  position: absolute; /* Position relative to the header */
+  top: 0; /* Align with top of header */
+  right: 0; /* Align with right of header */
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10001;
+  margin: 0; /* Remove any margin */
+  padding: 0; /* Remove any padding */
 }
 
 /* Responsive adjustments */
@@ -889,3 +897,13 @@ input[type="radio"] {
     min-width: auto;
   }
 } 
+
+.single-error-message {
+  color: #cc0000;
+  font-size: 14px;
+  margin: 5px 0 10px;
+  padding: 5px 10px;
+  background-color: rgba(255, 0, 0, 0.05);
+  border-left: 3px solid #cc0000;
+  border-radius: 2px;
+}
