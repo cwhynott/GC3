@@ -184,12 +184,6 @@
 }
 .load-btn:hover { background-color: #e69500; }
 
-.clear-btn {
-  background-color: #ff4d4d;
-  color: white;
-}
-.clear-btn:hover { background-color: #cc0000; }
-
 .spectrogram-img {
   max-width: 100%;
   border-radius: 8px;
@@ -239,68 +233,6 @@
   border-bottom: 1px solid #dee2e6;
   position: relative; /* Allow absolute positioning of the menu bar */
 }
-
-/* Style the menu bar */
-.menu-bar {
-  display: flex;
-  gap: 10px;
-  position: absolute;
-  top: 40px;
-  left: 5px;
-}
-
-/* Style the menu item */
-.menu-item {
-  position: relative; /* Position the dropdown menu relative to this container */
-}
-
-/* Style the menu buttons */
-.menu-button {
-  padding: 10px 15px;
-  font-size: 16px;
-  font-weight: bold;
-  color: #007bff;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.menu-button:hover {
-  background-color: #e9ecef;
-}
-
-/* Style the dropdown menu */
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  white-space: nowrap; /* Prevent wrapping of dropdown items */
-}
-
-/* Style the dropdown items */
-.dropdown-item {
-  padding: 10px 15px;
-  font-size: 14px;
-  color: #333;
-  background-color: white;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  transition: background-color 0.3s ease;
-}
-
-.dropdown-item:hover {
-  background-color: #f1f1f1;
-}
-
 
 .file-selection {
   display: flex;
@@ -369,12 +301,6 @@
   border-radius: 6px;
   border: 1px solid #ccc;
 }
-
-.clear-btn {
-  background-color: #ff4d4d;
-  color: white;
-}
-.clear-btn:hover { background-color: #cc0000; }
 
 .clear-files-btn {
   background-color: #FFA500;

@@ -42,7 +42,7 @@ const Generate: React.FC<{ onPlotGenerated: (plot: string | null) => void }> = (
   return (
     <>
       <button className="generate-button" onClick={handleGenerateClick}>
-        Generate
+        Generate Synthetic Data
       </button>
       
       {showPopup && (

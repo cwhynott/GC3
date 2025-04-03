@@ -341,12 +341,6 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
         >
           Clear Current File
         </button>
-        <button
-          onClick={handleClearFiles}
-          className="btn clear-btn"
-        >
-          Delete All Files
-        </button>
       </div>
   
       {/* Tabbed Interface for Plots */}
