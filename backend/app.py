@@ -49,7 +49,7 @@ def create_app():
         original_name = cfile.filename.replace('.cfile', '')
 
         try:
-            # ✅ Pass the actual file object to SigMF, NOT a string
+            # Pass the actual file object to SigMF, NOT a string
             sigmf_metadata = SigMF(metafile)
         except Exception as e:
             return jsonify({'error': f'Failed to parse metadata: {str(e)}'}), 400
@@ -59,13 +59,13 @@ def create_app():
         plot_ids, Pxx, freqs, bins = generate_plots(original_name, iq_data, sigmf_metadata)
         pxx_csv_file_id = save_pxx_csv(original_name, Pxx, freqs, bins)
 
-        # ✅ Save the metadata file in GridFS
+        # Save the metadata file in GridFS
         metafile.seek(0)  # Reset file pointer before saving
         meta_file_id = fs.put(metafile.read(), filename=f"{original_name}.sigmf-meta")
 
-        # ✅ Store metadata file ID in file_records
+        # Store metadata file ID in file_records
         file_data = FileData(original_name, sigmf_metadata, pxx_csv_file_id, plot_ids)
-        file_data.meta_file_id = meta_file_id  # ✅ Save metadata file ID
+        file_data.meta_file_id = meta_file_id  # Save metadata file ID
         file_record_id = db.file_records.insert_one(file_data.__dict__).inserted_id
 
         encoded_spectrogram = base64.b64encode(fs.get(plot_ids["spectrogram"]).read()).decode('utf-8')
@@ -294,18 +294,18 @@ def create_app():
         if not file_record:
             return jsonify({'error': 'File not found'}), 404
 
-        # ✅ Ensure meta_file_id exists in file_record
+        # Ensure meta_file_id exists in file_record
         if "meta_file_id" not in file_record:
             return jsonify({'error': 'meta_file_id not found in record'}), 400
 
         try:
-            # ✅ Fetch the metadata file from GridFS
+            # Fetch the metadata file from GridFS
             meta_file = fs.get(ObjectId(file_record["meta_file_id"]))
 
-            # ✅ Read and decode metadata
+            # Read and decode metadata
             meta_content = meta_file.read().decode('utf-8')  # Keep this as a string!
 
-            # ✅ Pass the JSON string to SigMF (not a dict!)
+            # Pass the JSON string to SigMF (not a dict!)
             sigmf_metadata = SigMF(io.StringIO(meta_content))
 
         except gridfs_errors.NoFile:
@@ -315,7 +315,7 @@ def create_app():
         except Exception as e:
             return jsonify({'error': f'Error processing SigMF: {str(e)}'}), 500
 
-        # ✅ Return extracted metadata
+        # Return extracted metadata
         metadata = {
             "datatype": sigmf_metadata.datatype,
             "sample_rate": sigmf_metadata.sample_rate,

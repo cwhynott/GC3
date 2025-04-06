@@ -1,3 +1,10 @@
+/**
+ * CS-410: Component where user uploads, views and manages files.
+ * @file FileHandle.tsx
+ * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
+ * @collaborators None
+ */
+
 import { useState, useEffect, ChangeEvent } from 'react';
 import '../App.css';
 import SavedFiles from './SavedFiles';
@@ -94,22 +101,23 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
 
       if (result.error) return setStatusMessage(`Error: ${result.error}`);
 
-      console.log("Upload Response:", result); // ✅ Debugging log
+      console.log("Upload Response:", result);
 
       onFileSelect(result.file_id);
 
-      // ✅ Immediately add uploaded file to saved list
+      // Immediately add uploaded file to saved list
       setSavedFiles((prevFiles) => [
         ...prevFiles,
         { _id: result.file_id, filename: selectedCFile.name }
       ]);
 
-      // ✅ Immediately set spectrogram image
+      // Immediately set spectrogram image
       if (result.spectrogram) {
         setPlotImages((prevImages) => ({ ...prevImages, spectrogram: result.spectrogram }));
-        setActiveTab('spectrogram'); // ✅ Ensure spectrogram is shown first
+        setActiveTab('spectrogram'); // Ensure spectrogram is shown first
       }
 
+      // update current file ID
       setCurrentFileId(result.file_id);
       fetchPlots(result.file_id);
       setStatusMessage(result.message);
@@ -119,7 +127,7 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
   };
   
   
-  // **Handle clearing only selected files**
+  // Handle clearing selected file
   const handleClearCurrentFile = () => {
     setSelectedCFile(null);
     setSelectedMetaFile(null);
@@ -142,7 +150,7 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
   
     for (const plot of plotTypes) {
       try {
-        console.log(`Fetching ${plot}...`); // ✅ Debugging log
+        console.log(`Fetching ${plot}...`);
   
         const response = await fetch(`http://127.0.0.1:5000/file/${fileId}/${plot}`);
         const result = await response.json();
@@ -152,42 +160,18 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
           continue;
         }
   
-        console.log(`Fetched ${plot}: ✅ Success`); // ✅ Debugging log
+        console.log(`Fetched ${plot}: ✅ Success`);
   
         // Ensure the spectrogram is set first
         setPlotImages((prevImages) => ({ ...prevImages, [plot]: result.image }));
   
         if (plot === 'spectrogram') {
-          setActiveTab('spectrogram');  // ✅ Ensure spectrogram is shown first
+          setActiveTab('spectrogram');  // Ensure spectrogram is shown first
         }
   
       } catch (error) {
         console.error(`Error fetching ${plot}:`, error);
       }
-    }
-  };
-
-  const handleClearFiles = async () => {
-    updateStatusMessage("Clearing all saved files");
-    try {
-      const response = await fetch('http://127.0.0.1:5000/refresh', { method: 'POST' });
-  
-      if (!response.ok) {
-        throw new Error('Failed to clear files from backend.');
-      }
-  
-      const result = await response.json();
-      console.log("Clear response:", result); // ✅ Debugging log
-  
-      // Delay to ensure backend clears before fetching updated list
-      setTimeout(() => {
-        fetchSavedFiles();
-        setStatusMessage('All files cleared.');
-      }, 500); // Adjust delay if necessary
-  
-    } catch (error) {
-      console.error("Error clearing files:", error);
-      setStatusMessage('Failed to clear saved files.');
     }
   };
 
@@ -231,7 +215,7 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
 
   // Handle loading a saved file
   const handleLoadFile = async (fileId: string) => {
-    setActiveTab('spectrogram');  // ✅ Ensure spectrogram is shown first
+    setActiveTab('spectrogram');  
     setStatusMessage('Loading file...');
     fetchPlots(fileId);
     setStatusMessage('Files loaded successfully');

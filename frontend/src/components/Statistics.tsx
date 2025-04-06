@@ -1,3 +1,10 @@
+/**
+ * CS-410: Statistics Bar Component.
+ * @file Statistics.tsx
+ * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
+ * @collaborators None
+ */
+
 import React, { useState, useEffect } from 'react';
 
 interface StatisticsProps {

@@ -1,3 +1,10 @@
+/**
+ * CS-410: Tab component. 
+ * @file Tabs.tsx
+ * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
+ * @collaborators None
+ */
+
 import React, { useState } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';

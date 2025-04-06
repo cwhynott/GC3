@@ -1,6 +1,8 @@
 /** 
  * CS-410: Frontend for uploading files, generating spectrograms, and interacting with MongoDB
- * @file app.tsx
+ * @file App.tsx
+ * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
+ * @collaborators None
  */
 
 import { useState } from 'react';
@@ -17,13 +19,13 @@ function App() {
 
   return (
     <main className="enhanced-app-container">
-      {/* ✅ Application Header */}
+      {/* Application Header */}
       <header className="app-header">
         <img src="/images/GC3 Logo.png" alt="GC3 Logo" className="app-logo" />
         <Generate onPlotGenerated={handlePlotGenerated} />
       </header>
 
-      {/* ✅ Main Layout: Upload Controls + Metadata + Tabs */}
+      {/* Main Layout: Upload Controls + Metadata + Tabs */}
       <div className="upload-metadata-wrapper">
         <DisplayTabs/>
       </div>

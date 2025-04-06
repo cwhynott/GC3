@@ -1,5 +1,13 @@
+/**
+ * CS-410: Saved Files library component
+ * @file SavedFiles.tsx
+ * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
+ * @collaborators None
+ */
+
 import React, { useState } from 'react';
 
+// defines interface to be user in FileHandle
 interface SavedFile {
   _id: string;
   filename: string;
