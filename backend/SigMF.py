@@ -40,7 +40,7 @@ class SigMF():
             comment = annotation.get('comment')
             self.annotations.append(Annotation(sample_start, sample_count, freq_lower, freq_upper, label, comment))
 
-        # ✅ Calculate statistics
+        # Calculate statistics
         self.duration = self._calculate_duration()
         self.min_frequency = self._calculate_min_frequency()
         self.max_frequency = self._calculate_max_frequency()

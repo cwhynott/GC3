@@ -1,3 +1,10 @@
+/**
+ * CS-410: Synthetic Data Popup component.
+ * @file GeneratePopup.tsx
+ * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
+ * @collaborators None
+ */
+
 import React, { useState } from 'react';
 
 interface GeneratePopupProps {
