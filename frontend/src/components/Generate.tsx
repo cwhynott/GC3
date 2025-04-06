@@ -3,6 +3,7 @@
  * @file Generate.tsx
  * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
  * @collaborators None
+ * @description This component is used to generate synthetic data for the spectrogram.
  */
 
 import React, { useState } from 'react';

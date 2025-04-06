@@ -3,6 +3,7 @@
  * @file Statistics.tsx
  * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
  * @collaborators None
+ * @description This component is used to display the statistics for the spectrogram.
  */
 
 import React, { useState, useEffect } from 'react';

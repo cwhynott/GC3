@@ -331,7 +331,7 @@ def create_app():
         return jsonify(metadata)
 
     def generate_data(rows, cols, num_transmitters, transmitter_mean, transmitter_sd, noise_mean, noise_sd, bandwidth, active_time, placement_method):
-        # Generate the background noise matrix
+        """Creates the spectrogram plot for the generated data"""
         matrix = np.random.normal(loc=noise_mean, scale=noise_sd, size=(rows, cols))
 
         transmitters = []
@@ -384,6 +384,7 @@ def create_app():
 
     @app.route('/generate', methods=['POST'])
     def generate_data_endpoint():
+        """High level function for generating spectrogram"""
         data = request.json
         rows = data['rows']
         cols = data['cols']
