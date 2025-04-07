@@ -3,9 +3,9 @@ import Select from 'react-select';
 
 
 const tabOptions = [
-  { value: 'current', label: '📊 Metadata Statistics' },
-  { value: 'history', label: '📈 Calculated Statistics' },
-  { value: 'analysis', label: '🧠 Analysis' },
+  { value: 'metadata', label: 'Metadata Statistics' },
+  { value: 'calculated', label: 'Receiver Properties' },
+  { value: 'transmission', label: 'Transmission Statistics' },
 ];
 
 
@@ -43,7 +43,9 @@ const Statistics: React.FC<StatisticsProps> = ({ fileId }) => {
   const [metadata, setMetadata] = useState<MetadataType | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('current');
+  const [activeTab, setActiveTab] = useState<string>('metadata');
+  const [calculatedStats, setCalculatedStats] = useState<Record<string, any> | null>(null);
+
 
   useEffect(() => {
     if (!fileId) {
@@ -73,8 +75,39 @@ const Statistics: React.FC<StatisticsProps> = ({ fileId }) => {
     };
 
     fetchMetadata();
+    const fetchCalculatedStats = async () => {
+      try {
+        const response = await fetch(`http://127.0.0.1:5000/file/${fileId}/calculated_statistics`);
+        const result = await response.json();
+    
+        console.log("Received calculated stats:", result); // ✅ DEBUG HERE
+    
+        if (!result.error) {
+          setCalculatedStats(result);
+        }
+      } catch (err) {
+        console.error('Error fetching calculated statistics:', err);
+      }
+    };
+    fetchCalculatedStats();    
   }, [fileId]);
 
+
+  const formatCalculatedStats = (data: Record<string, any>) => {
+    const fields: [string, any][] = [
+      ['Sample Rate', `${Number(data.sampling_frequency).toLocaleString()} Hz`],
+      ['FFT', data.fft_size],
+      ['Row Duration', `${data.row_duration.toExponential(2)} s`],
+      ['Frequency Resolution', `${data.frequency_resolution.toFixed(2)} Hz`]
+    ];
+  
+    return (
+      <div className="metadata-container">
+        <MetadataSection title="Receiver Properties" items={fields} />
+      </div>
+    );
+  };
+  
   const formatMetadata = (data: MetadataType) => {
     const administrativeFields: [string, any][] = [
       ['Author', data.author],
@@ -98,14 +131,17 @@ const Statistics: React.FC<StatisticsProps> = ({ fileId }) => {
       </div>
     );
   };
+  
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'current':
+      case 'metadata':
         return metadata ? formatMetadata(metadata) : <p className="no-file-message">No metadata available.</p>;
-      case 'history':
-        return <p className="placeholder-message">Calculated statistics tab coming soon.</p>;
-      case 'analysis':
+      case 'calculated':
+        return calculatedStats
+          ? formatCalculatedStats(calculatedStats)
+          : <p className="placeholder-message">whaisodiaoksjdkajsldk.</p>;
+      case 'transmission':
         return <p className="placeholder-message">Analysis tools tab coming soon.</p>;
       default:
         return null;
@@ -116,24 +152,25 @@ const Statistics: React.FC<StatisticsProps> = ({ fileId }) => {
     <div className="statistics-container">
       <h2 className="statistics-header">Information</h2>
 
-      <div className="mb-6 max-w-sm">
-        <label htmlFor="tab-select" className="block mb-2 text-sm font-medium text-gray-700">
-          Select View
-        </label>
+      <div className="mb-6 w-full max-w-md min-w-[250px]">
         <Select
           inputId="tab-select"
           options={tabOptions}
           defaultValue={tabOptions.find((option) => option.value === activeTab)}
           onChange={(selectedOption) => setActiveTab(selectedOption?.value || 'current')}
+          menuPortalTarget={document.body}
+          menuPosition="fixed"
           styles={{
             control: (base) => ({
               ...base,
+              width: '100%',
               borderRadius: '0.5rem',
               borderColor: '#d1d5db',
               padding: '2px',
               boxShadow: 'none',
               '&:hover': { borderColor: '#3b82f6' },
             }),
+            menuPortal: (base) => ({ ...base, zIndex: 9999 }), // important for visibility
             option: (base, { isFocused, isSelected }) => ({
               ...base,
               backgroundColor: isSelected

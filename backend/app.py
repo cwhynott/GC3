@@ -381,6 +381,41 @@ def create_app():
         buf.seek(0)
         plot_data = base64.b64encode(buf.getvalue()).decode('utf-8')
         return plot_data
+    
+    @app.route('/file/<file_id>/calculated_statistics', methods=['GET'])
+    def get_calculated_statistics(file_id):
+        """Calculate and return FFT size, sampling frequency, frequency resolution, and row duration."""
+        if not ObjectId.is_valid(file_id):
+            return jsonify({'error': 'Invalid file ID format'}), 400
+
+        file_record = db.file_records.find_one({"_id": ObjectId(file_id)})
+        if not file_record:
+            return jsonify({'error': 'File not found'}), 404
+
+        try:
+            # Load the metadata
+            meta_file = fs.get(ObjectId(file_record["meta_file_id"]))
+            meta_content = meta_file.read().decode('utf-8')
+            sigmf_metadata = SigMF(io.StringIO(meta_content))
+
+            # Parameters
+            sample_rate = sigmf_metadata.sample_rate
+            N = 256
+            freq_resolution = sample_rate / N
+            row_duration = N / sample_rate
+
+            
+            return jsonify({
+                "fft_size": N,
+                "sampling_frequency": sample_rate,
+                "frequency_resolution": freq_resolution,
+                "row_duration": row_duration
+            })
+
+
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
 
     @app.route('/generate', methods=['POST'])
     def generate_data_endpoint():
