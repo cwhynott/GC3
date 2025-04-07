@@ -134,6 +134,18 @@
     background-color: #0056b3;
   }
   
+  .tab-select {
+    background-color: white;
+    border-color: #ccc;
+    font-size: 1rem;
+  }
+  
+  .tab-select:focus {
+    outline: none;
+    border-color: #3182ce;
+  }
+  
+  
   /* ========================================
      5. COMPONENT CONTAINER STYLES
      ======================================== */
