@@ -14,11 +14,12 @@ import SavedFiles from './SavedFiles';
 interface SavedFile {
   _id: string;
   filename: string;
+  annotations?: any[];
 }
 
 interface FileHandleProps {
   fileId: string | null;
-  onFileSelect: (fileId: string | null) => void;
+  onFileSelect: (fileId: string | null, annotations?: any[]) => void;
 }
 
 const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
@@ -103,8 +104,14 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
       if (result.error) return setStatusMessage(`Error: ${result.error}`);
 
       console.log("Upload Response:", result);
+      console.log("[Frontend] Received AirVIEW annotations:", result.annotations);
 
-      onFileSelect(result.file_id);
+      if (result.annotations && Array.isArray(result.annotations)) {
+        console.log("[Frontend] Upload received annotations:", result.annotations);
+      }
+      
+      onFileSelect(result.file_id, result.annotations);  // ✅ Pass it up
+      
 
       // Immediately add uploaded file to saved list
       setSavedFiles((prevFiles) => [

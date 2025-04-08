@@ -11,7 +11,9 @@ const tabOptions = [
 
 interface StatisticsProps {
   fileId: string | null;
+  annotations?: any[];
 }
+
 
 interface MetadataType {
   sample_rate?: number;
@@ -39,13 +41,13 @@ const MetadataSection: React.FC<{ title: string; items: [string, any][] }> = ({ 
   </div>
 );
 
-const Statistics: React.FC<StatisticsProps> = ({ fileId }) => {
+const Statistics: React.FC<StatisticsProps> = ({ fileId, annotations }) => {
   const [metadata, setMetadata] = useState<MetadataType | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('metadata');
   const [calculatedStats, setCalculatedStats] = useState<Record<string, any> | null>(null);
-
+  const [transmissionStats, setTransmissionStats] = useState<any[] | null>(null);
 
   useEffect(() => {
     if (!fileId) {
@@ -89,9 +91,49 @@ const Statistics: React.FC<StatisticsProps> = ({ fileId }) => {
         console.error('Error fetching calculated statistics:', err);
       }
     };
-    fetchCalculatedStats();    
-  }, [fileId]);
+    fetchCalculatedStats();  
+    if (annotations && annotations.length > 0) {
+      console.log("Setting transmission stats from props:", annotations);
+      setTransmissionStats(annotations);
+    } else {
+      const fetchTransmissionStats = async () => {
+        try {
+          const response = await fetch(`http://127.0.0.1:5000/file/${fileId}/airview`);
+          const result = await response.json();
+    
+          console.log("[Frontend] Fallback fetched AirVIEW annotations:", result.annotations);
+    
+          if (result.annotations && Array.isArray(result.annotations)) {
+            setTransmissionStats(result.annotations);
+          }
+        } catch (err) {
+          console.error("Failed to fetch AirVIEW results:", err);
+        }
+      };
+      fetchTransmissionStats();
+    }
+  }, [annotations, fileId]);
 
+
+  const formatTransmissionStats = (data: any[]) => {
+    const fields: [string, any][][] = data.map((annotation, index) => ([
+      ['Transmitter #', index + 1],
+      ['Frequency Lower Edge (Hz)', annotation['core:freq_lower_edge']],
+      ['Frequency Upper Edge (Hz)', annotation['core:freq_upper_edge']],
+      ['Sample Start', annotation['core:sample_start']],
+      ['Sample Count', annotation['core:sample_count']],
+      ['Label', annotation['core:label']]
+    ]));
+  
+    return (
+      <div className="metadata-container">
+        {fields.map((group, idx) => (
+          <MetadataSection key={idx} title={`Transmission ${idx + 1}`} items={group} />
+        ))}
+      </div>
+    );
+  };
+  
 
   const formatCalculatedStats = (data: Record<string, any>) => {
     const fields: [string, any][] = [
@@ -142,7 +184,9 @@ const Statistics: React.FC<StatisticsProps> = ({ fileId }) => {
           ? formatCalculatedStats(calculatedStats)
           : <p className="placeholder-message">whaisodiaoksjdkajsldk.</p>;
       case 'transmission':
-        return <p className="placeholder-message">Analysis tools tab coming soon.</p>;
+        return transmissionStats && transmissionStats.length > 0
+          ? formatTransmissionStats(transmissionStats)
+          : <p className="placeholder-message">No transmissions detected.</p>;
       default:
         return null;
     }

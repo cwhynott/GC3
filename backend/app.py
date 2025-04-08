@@ -20,6 +20,7 @@ from FileData import FileData
 import csv
 import os
 import json
+from airview import Plugin
 
 import matplotlib
 # Use the Agg backend for Matplotlib to avoid using any X server
@@ -54,7 +55,23 @@ def create_app():
         except Exception as e:
             return jsonify({'error': f'Failed to parse metadata: {str(e)}'}), 400
 
-        iq_data = np.frombuffer(cfile.read(), dtype=np.complex64)
+        # Read cfile contents once
+        cfile_bytes = cfile.read()
+        iq_data = np.frombuffer(cfile_bytes, dtype=np.complex64)
+
+        # Run AirVIEW plugin
+        plugin = Plugin(
+            sample_rate=sigmf_metadata.sample_rate,
+            center_freq=sigmf_metadata.center_frequency,
+            run_parameter_optimization='n'
+        )
+        airview_result = plugin.run(iq_data)
+        airview_annotations = airview_result.get("annotations", [])
+
+        # Debug log
+        print(f"[AIRVIEW] Found {len(airview_annotations)} transmitters:")
+        for i, ann in enumerate(airview_annotations):
+            print(f"  TX #{i+1}: {ann}")
 
         plot_ids, Pxx, freqs, bins = generate_plots(original_name, iq_data, sigmf_metadata)
         pxx_csv_file_id = save_pxx_csv(original_name, Pxx, freqs, bins)
@@ -73,8 +90,10 @@ def create_app():
         return jsonify({
             'spectrogram': encoded_spectrogram,
             'file_id': str(file_record_id),
-            'message': 'All files uploaded and saved successfully'
+            'message': 'All files uploaded and saved successfully',
+            'annotations': airview_annotations  # From AirVIEW
         })
+
 
     def generate_plots(original_name, iq_data, sigmf_metadata):
         """Generates and stores plots in GridFS."""
@@ -412,10 +431,8 @@ def create_app():
                 "row_duration": row_duration
             })
 
-
         except Exception as e:
             return jsonify({'error': str(e)}), 500
-
 
     @app.route('/generate', methods=['POST'])
     def generate_data_endpoint():
