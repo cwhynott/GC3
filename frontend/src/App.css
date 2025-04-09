@@ -565,6 +565,7 @@
   .popup-content, .spectrogram-popup-content {
     background-color: #fff;
     padding: 25px;
+    padding-top: 15px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     position: relative;
@@ -601,17 +602,11 @@
   }
   
   .spectrogram-popup-content {
-    background-color: #fff;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     width: 700px !important;
     min-width: 700px;
     max-width: 95%;
     max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-    z-index: 999;
+    padding-top: 15px;
   }
   
   .popup-header, .spectrogram-header {
@@ -619,10 +614,12 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 5px;
+    margin-top: 0px;
+    padding-top: 5px;
     padding-bottom: 5px;
     border-bottom: 2px solid #eee;
     position: relative;
-    height: 30px;
+    height: 35px;
   }
   
   .popup-header h4, .spectrogram-header h4 {
@@ -630,6 +627,8 @@
     font-size: 18px;
     color: #333;
     padding-right: 30px;
+    height: 24px;
+    line-height: 24px;
   }
   
   .close-button {
@@ -640,7 +639,7 @@
     cursor: pointer;
     color: #666;
     position: absolute;
-    top: 0;
+    top: 2px;
     right: 0;
     width: 30px;
     height: 30px;
