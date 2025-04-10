@@ -331,7 +331,6 @@ def create_app():
         return jsonify(metadata)
 
     def generate_data(rows, cols, num_transmitters, transmitter_mean, transmitter_sd, noise_mean, noise_sd, bandwidth, active_time, placement_method):
-        """Creates the spectrogram plot for the generated data"""
         matrix = np.random.normal(loc=noise_mean, scale=noise_sd, size=(rows, cols))
 
         transmitters = []
@@ -353,23 +352,48 @@ def create_app():
                         transmitters.append((start_time, start_freq))
                         break
         elif placement_method == "equally_spaced":
-            # Calculate the margin and spacing
-            margin = rows // (num_transmitters + 1)  # Leave equal margins at the top and bottom
-            spacing = (rows - 2 * margin) // (num_transmitters - 1)  # Space transmitters evenly within the remaining space
-
-            for i in range(num_transmitters):
-                start_time = margin + i * spacing
-                start_freq = center_freq - (bandwidth // 2)  # Center the transmitter around the middle frequency
+    
+            if num_transmitters == 1:
+                # Handle single transmitter case - place it randomly
+                start_time = np.random.randint(0, rows - active_time + 1)
+                start_freq = center_freq - (bandwidth // 2)
                 transmitters.append((start_time, start_freq))
+            else:
+                # Place the first transmitter randomly in the top third of the matrix
+                top_third = (rows - active_time) // 3
+                min_position = max(0, top_third // 2)  # Ensure some margin from the very top
+                first_transmitter_pos = np.random.randint(min_position, min_position + top_third)
+                
+                # Add the first transmitter
+                transmitters.append((first_transmitter_pos, center_freq - (bandwidth // 2)))
+                
+                # Calculate available space from first transmitter to bottom of matrix
+                available_space = rows - first_transmitter_pos - active_time
+                
+                # Important: Calculate total number of gaps needed
+                # We need (num_transmitters-1) gaps between transmitters + 1 gap after last transmitter
+                total_gaps = num_transmitters  # This equals (num_transmitters-1) + 1
+                
+                # Calculate the size of each gap to ensure equal spacing
+                gap_size = available_space // total_gaps
+                
+                # Place remaining transmitters with equal gaps
+                for i in range(1, num_transmitters):
+                    # Position each transmitter after a consistent gap
+                    # Each transmitter is placed after the end of the previous one + a gap
+                    start_time = first_transmitter_pos + active_time + (i * gap_size)
+                    start_freq = center_freq - (bandwidth // 2)
+                    transmitters.append((start_time, start_freq))
 
         # Inject the transmitter signal
         for start_time, start_freq in transmitters:
             for t in range(start_time, start_time + active_time):
                 for f in range(start_freq, start_freq + bandwidth):
-                    signal = np.random.normal(loc=transmitter_mean, scale=transmitter_sd)
-                    matrix[t][f] += signal
+                    if 0 <= t < rows and 0 <= f < cols:  # Ensure we're within matrix bounds
+                        signal = np.random.normal(loc=transmitter_mean, scale=transmitter_sd)
+                        matrix[t][f] += signal
 
-        # Generate and return the plot as base64
+        # Generate plot as base64
         plt.figure(figsize=(10, 6))
         plt.imshow(matrix, aspect='auto', cmap='viridis')
         plt.title('Generated Data Matrix')
@@ -380,7 +404,24 @@ def create_app():
         plt.close()
         buf.seek(0)
         plot_data = base64.b64encode(buf.getvalue()).decode('utf-8')
-        return plot_data
+        
+        # Generate CSV data
+        csv_data = io.StringIO()
+        csv_writer = csv.writer(csv_data)
+        
+        # Add header row with column indices
+        header = ['Row/Col'] + [str(i) for i in range(cols)]
+        csv_writer.writerow(header)
+        
+        # Add data rows
+        for i in range(rows):
+            row_data = [str(i)] + [str(float(x)) for x in matrix[i]]
+            csv_writer.writerow(row_data)
+        
+        csv_data.seek(0)
+        csv_string = csv_data.getvalue()
+        
+        return plot_data, csv_string
 
     @app.route('/generate', methods=['POST'])
     def generate_data_endpoint():
@@ -398,15 +439,16 @@ def create_app():
         placement_method = data['placementMethod']
 
         try:
-            plot_data = generate_data(rows, cols, num_transmitters, transmitter_mean, transmitter_sd, noise_mean, noise_sd,
+            plot_data, csv_data = generate_data(rows, cols, num_transmitters, transmitter_mean, transmitter_sd, noise_mean, noise_sd,
                                     bandwidth, active_time, placement_method)
-            return jsonify({'plot': plot_data})
+            return jsonify({
+                'plot': plot_data,
+                'csv': csv_data
+            })
         except Exception as e:
             return jsonify({'error': str(e)}), 500
-
-
+        
     return app
-
 
 if __name__ == '__main__':
     app = create_app()
