@@ -330,6 +330,13 @@ def create_app():
 
         return jsonify(metadata)
 
+    # NOTE: Visualization Limitation
+    # The spectrogram visualization may not visibly reflect changes to noise_mean due to 
+    # matplotlib's automatic color scaling. plt.imshow() automatically rescales the colormap
+    # to fit the full range of data in the matrix. This means that changing noise_mean shifts
+    # all values in the matrix but the colors are automatically rescaled to use the same 
+    # visual range regardless of the absolute values. Hoever,the CSV data contains the 
+    # correct numerical values with the specified noise_mean.
     def generate_data(rows, cols, num_transmitters, transmitter_mean, transmitter_sd, noise_mean, noise_sd, bandwidth, active_time, placement_method):
         matrix = np.random.normal(loc=noise_mean, scale=noise_sd, size=(rows, cols))
 
@@ -370,17 +377,14 @@ def create_app():
                 # Calculate available space from first transmitter to bottom of matrix
                 available_space = rows - first_transmitter_pos - active_time
                 
-                # Important: Calculate total number of gaps needed
-                # We need (num_transmitters-1) gaps between transmitters + 1 gap after last transmitter
-                total_gaps = num_transmitters  # This equals (num_transmitters-1) + 1
+                # Calculate total number of gaps needed
+                total_gaps = num_transmitters
                 
                 # Calculate the size of each gap to ensure equal spacing
                 gap_size = available_space // total_gaps
                 
                 # Place remaining transmitters with equal gaps
                 for i in range(1, num_transmitters):
-                    # Position each transmitter after a consistent gap
-                    # Each transmitter is placed after the end of the previous one + a gap
                     start_time = first_transmitter_pos + active_time + (i * gap_size)
                     start_freq = center_freq - (bandwidth // 2)
                     transmitters.append((start_time, start_freq))
