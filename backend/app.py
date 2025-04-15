@@ -231,7 +231,9 @@ def create_app():
     def get_files():
         """Lists all stored filenames."""
         try:
+            print("GETTING FILES")
             files = list(db.file_records.find({}, {"filename": 1}))
+            print(files)
             file_list = [{"_id": str(file["_id"]), "filename": file["filename"]} for file in files]
             return jsonify({"files": file_list})
         except Exception as e:
