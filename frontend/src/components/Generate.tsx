@@ -100,7 +100,7 @@ const Generate: React.FC<{ onPlotGenerated: (plot: string | null) => void }> = (
                 <div className="spectrogram-popup-content">
                   <div className="spectrogram-header">
                     <h4>Generated Spectrogram</h4>
-                    <button className="close-button" onClick={handleClosePlot}>×</button>
+                    <button className="spec-close-button" onClick={handleClosePlot}>×</button>
                   </div>
                   <div className="spectrogram-image-container">
                     <img 
