@@ -63,7 +63,7 @@ def create_app():
         plugin = Plugin(
             sample_rate=sigmf_metadata.sample_rate,
             center_freq=sigmf_metadata.center_frequency,
-            run_parameter_optimization='n'
+            run_parameter_optimization='n'  # Try changing to 'y' for optimization
         )
         airview_result = plugin.run(iq_data)
         airview_annotations = airview_result.get("annotations", [])
@@ -83,6 +83,7 @@ def create_app():
         # Store metadata file ID in file_records
         file_data = FileData(original_name, sigmf_metadata, pxx_csv_file_id, plot_ids)
         file_data.meta_file_id = meta_file_id  # Save metadata file ID
+        file_data.annotations = airview_annotations  # ✅ Save annotations
         file_record_id = db.file_records.insert_one(file_data.__dict__).inserted_id
 
         encoded_spectrogram = base64.b64encode(fs.get(plot_ids["spectrogram"]).read()).decode('utf-8')
@@ -268,6 +269,22 @@ def create_app():
             return jsonify({'image': base64.b64encode(spectrogram_file.read()).decode('utf-8')})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+        
+        
+    @app.route('/file/<file_id>/annotations', methods=['GET'])
+    def get_file_annotations(file_id):
+        """Fetch annotations from a previously uploaded file."""
+        if not ObjectId.is_valid(file_id):
+            return jsonify({'error': 'Invalid file ID format'}), 400
+
+        file_record = db.file_records.find_one({"_id": ObjectId(file_id)})
+        if not file_record:
+            return jsonify({'error': 'File not found'}), 404
+
+        # Retrieve annotations if stored
+        annotations = file_record.get("annotations", [])
+        return jsonify({'annotations': annotations})
+    
 
     @app.route('/refresh', methods=['POST'])
     def refresh_files():

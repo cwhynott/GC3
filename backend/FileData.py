@@ -1,14 +1,14 @@
 """
- CS-410: FileData class that stores file level information about uploaded data file
- @file FileData.py
- @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
- @collaborators None
+CS-410: FileData class that stores file level information about uploaded data file
+@file FileData.py
+@authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
+@collaborators None
 """
 
 import SigMF
 
 class FileData:
-    def __init__(self, original_name, sigmf_metadata, pxx_csv_file_id, plot_ids, fft=1024):
+    def __init__(self, original_name, sigmf_metadata, pxx_csv_file_id, plot_ids, fft=1024, annotations=None):
         """
         Initializes FileData object.
         :param original_name: Original filename without extension
@@ -16,6 +16,7 @@ class FileData:
         :param pxx_csv_file_id: File ID of the power spectral density (Pxx) CSV file
         :param plot_ids: Dictionary containing file IDs for various plots
         :param fft: FFT size for spectrogram processing (default: 1024)
+        :param annotations: Optional list of annotations from AirVIEW
         """
         self.filename = original_name
         self.raw_data_file_id = str(plot_ids["raw_data"]) if "raw_data" in plot_ids else None
@@ -29,3 +30,6 @@ class FileData:
         # Additional metadata
         self.sigmf = sigmf_metadata.__dict__
         self.fft = fft
+
+        # ✅ AirVIEW annotations
+        self.annotations = annotations if annotations is not None else []

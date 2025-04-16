@@ -226,10 +226,28 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
     setActiveTab('spectrogram');  
     setStatusMessage('Loading file...');
     fetchPlots(fileId);
+  
+    try {
+      const response = await fetch(`http://127.0.0.1:5000/file/${fileId}/annotations`);
+      const result = await response.json();
+  
+      if (result.error) {
+        console.error("Error fetching annotations:", result.error);
+        setStatusMessage("Failed to load annotations.");
+        onFileSelect(fileId, []); // fallback to empty
+      } else {
+        console.log("[Frontend] Loaded annotations:", result.annotations);
+        onFileSelect(fileId, result.annotations);
+      }
+    } catch (error) {
+      console.error("Failed to fetch annotations:", error);
+      onFileSelect(fileId, []); // fallback to empty
+    }
+  
     setStatusMessage('Files loaded successfully');
     setCurrentFileId(fileId);
-    onFileSelect(fileId);
-  };  
+  };
+  
 
   // Fetch saved files from the database
   const fetchSavedFiles = async () => {

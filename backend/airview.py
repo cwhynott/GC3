@@ -23,11 +23,9 @@ def findTransmitters(input, scale, beta, jaccard_threshold, max_gap_rows, fft_si
     # num_items = len(regions[0][0])
     # print("Dimensions:", (num_rows, num_columns, num_items))
     # print(regions[0])
-
     threshold = params[0] + params[1]*beta # threshold = mean + stdev*beta
     
     detected = findTransmittersMultiScale(input, regions, jaccard_threshold, scale, threshold, max_gap_rows)
-    
     return detected # output annotations in main run function
     
 
@@ -38,7 +36,7 @@ class Plugin:
     
     # custom params
     run_parameter_optimization: str = 'no'
-    beta: float = 4.0
+    beta: float = 2.0
     scale: int = 9
 
     def run(self, samples):
@@ -57,7 +55,7 @@ class Plugin:
         for i in range(num_rows):
             spectrogram[i,:] = 10*np.log10(np.abs(np.fft.fftshift(np.fft.fft(samples[i*fft_size:(i+1)*fft_size])))**2)
 
-        # print(spectrogram.shape)
+        print(spectrogram.shape)
         time_for_fft = fft_size * (1/self.sample_rate) *1000 # time it takes to traverse in ms
         max_gap_rows = math.ceil(0.0/time_for_fft)
         jaccard_threshold = 0.5 # if they are at least halfway overlapping, considered aligned
@@ -67,8 +65,9 @@ class Plugin:
             airview_beta_scale = findOptimalParams(spectrogram)
             print(f"Optimal Beta and Scale: beta: {airview_beta_scale[0]}, scale: {airview_beta_scale[1]}")
         else:
+            print("FINDING")
             detected = findTransmitters(spectrogram, self.scale, self.beta, jaccard_threshold, max_gap_rows, fft_size)
-        
+            print("FOUND")
             # When making a detector, for the return, make a list, then for each detected emission, add one of these dicts to the list:
             annotations = []
             for transmitter in detected:
