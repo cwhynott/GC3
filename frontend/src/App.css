@@ -52,7 +52,7 @@
   
   .generate-button {
     position: absolute;
-    top: 35%;
+    top: 39%;
     right: 3%;
     padding: 10px 20px;
     font-size: 1rem;
@@ -82,7 +82,7 @@
     width: 32px;
     height: 32px;
     transition: opacity 0.2s;
-    top: 35%;
+    top: 39%;
     left: 3%;
     position: absolute;
   }
@@ -169,7 +169,6 @@
     border-radius: 5px;
     overflow-y: auto;
     white-space: pre-wrap;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -186,7 +185,7 @@
     background-color: #ffffff;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -285,7 +284,7 @@
     background-color: #fff;
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
   
   .saved-files ul {
@@ -374,7 +373,7 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
   
   .search-bar:focus {
@@ -515,7 +514,7 @@
     background: white;
     padding: 1.5rem 2rem;
     border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     flex: 1 1 45%;
     min-width: 300px;
     box-sizing: border-box;
@@ -590,7 +589,7 @@
     padding: 25px;
     padding-top: 15px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     position: relative;
     z-index: 999;
     height: 80vh !important;
@@ -654,7 +653,27 @@
     line-height: 24px;
   }
   
-  .close-button {
+  .spec-close-button {
+    background: transparent;
+    border: none;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #666;
+    position: absolute;
+    top: 6px;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10001;
+    margin: 0;
+    padding: 0;
+  }
+
+  .data-close-button {
     background: transparent;
     border: none;
     font-size: 18px;
@@ -662,7 +681,7 @@
     cursor: pointer;
     color: #666;
     position: absolute;
-    top: 2px;
+    top: -3px;
     right: 0;
     width: 30px;
     height: 30px;
