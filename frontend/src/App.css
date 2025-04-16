@@ -46,6 +46,7 @@
   .app-logo {
     max-height: 100px;
     width: auto;
+    padding-top: 10px;
     padding-bottom: 10px;
   }
   
@@ -66,6 +67,28 @@
   
   .generate-button:hover {
     background-color: #0056b3;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+  }
+  
+  .github-link {
+    margin-right: 15px;
+  }
+  
+  .github-logo {
+    width: 32px;
+    height: 32px;
+    transition: opacity 0.2s;
+    top: 35%;
+    left: 3%;
+    position: absolute;
+  }
+  
+  .github-logo:hover {
+    opacity: 0.8;
   }
   
   /* ========================================
