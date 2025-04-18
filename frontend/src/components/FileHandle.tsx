@@ -32,7 +32,12 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
   const [selectedCFileName, setSelectedCFileName] = useState<string | null>(null);
   const [selectedMetaFileName, setSelectedMetaFileName] = useState<string | null>(null);
   const [dots, setDots] = useState<string>(''); // Track the dots
-  const [runAirview, setRunAirview] = useState<boolean>(true);
+  const [runAirview, setRunAirview] = useState<boolean>(false);
+  const [downloadCSV, setDownloadCSV] = useState<boolean>(false);
+  const [autoParams,   setAutoParams]   = useState<boolean>(true);
+  const [manualBeta,   setManualBeta]   = useState<number>(2.0);
+  const [manualScale,  setManualScale]  = useState<number>(9);
+  
 
 
   // State for tab switching
@@ -98,14 +103,25 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
       const formData = new FormData();
       formData.append('cfile', selectedCFile);
       formData.append('metaFile', selectedMetaFile);
-      // --- new ---
       formData.append('runAirview', runAirview ? 'true' : 'false');
+      formData.append('downloadCSV', downloadCSV ? 'true' : 'false');
+
+      // new:
+      formData.append('autoParams', autoParams ? 'true' : 'false');
+      if (!autoParams) {
+        formData.append('beta',  manualBeta.toString());
+        formData.append('scale', manualScale.toString());
+      }
 
       const response = await fetch('http://127.0.0.1:5000/upload', {
         method: 'POST',
         body: formData
       });
       const result = await response.json();
+
+      setStatusMessage(
+        `${result.message} — used β=${result.beta_used}, scale=${result.scale_used}`
+      );
 
       if (result.error) return setStatusMessage(`Error: ${result.error}`);
 
@@ -129,6 +145,27 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
       if (result.spectrogram) {
         setPlotImages((prevImages) => ({ ...prevImages, spectrogram: result.spectrogram }));
         setActiveTab('spectrogram'); // Ensure spectrogram is shown first
+      }
+
+      // if user wants the CSV, fetch & trigger download
+      if (downloadCSV) {
+        try {
+          const csvRes = await fetch(`http://127.0.0.1:5000/file/${result.file_id}/csv`);
+          if (!csvRes.ok) throw new Error('CSV download failed');
+          const blob = await csvRes.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          // name it same as backend header
+          a.download = `${selectedCFile.name.replace('.cfile','')}_pxx.csv`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+        } catch (e) {
+          console.error("CSV download error", e);
+          // optional: setStatusMessage("CSV download failed");
+        }
       }
 
       // update current file ID
@@ -357,15 +394,79 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
         >
           Clear Current File
         </button>
-        {/* --- new toggle --- */}
-        <label style={{ marginLeft: '1rem' }}>
+        <div className="toggle-group">
+        {/* Run AirVIEW */}
+        <label className="toggle-switch">
           <input
             type="checkbox"
             checked={runAirview}
-            onChange={() => setRunAirview(!runAirview)}
+            onChange={() => setRunAirview(v => !v)}
           />
-          {' '}Run AirVIEW
+          <span className="slider" />
         </label>
+        <span>Run AirVIEW</span>
+
+        {/* Download CSV */}
+        <label className="toggle-switch">
+          <input
+            type="checkbox"
+            checked={downloadCSV}
+            onChange={() => setDownloadCSV(v => !v)}
+          />
+          <span className="slider" />
+        </label>
+        <span>Download CSV</span>
+      </div>
+
+      {/* --- Only show params when Run AirVIEW is ON --- */}
+      {runAirview && (
+        <fieldset style={{ border: '1px solid #ddd', padding: '0.75rem', marginTop: '1rem' }}>
+          <legend style={{ fontSize: '0.9rem' }}>AirVIEW Parameters</legend>
+
+          {/* Auto vs Manual */}
+          <div className="toggle-group">
+            <label>
+              <input
+                type="radio"
+                name="paramMode"
+                checked={autoParams}
+                onChange={() => setAutoParams(true)}
+              /> Auto‑train
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="paramMode"
+                checked={!autoParams}
+                onChange={() => setAutoParams(false)}
+              /> Manual
+            </label>
+          </div>
+
+          {/* Manual inputs */}
+          {!autoParams && (
+            <div className="param-form">
+              <label>
+                β:
+                <input
+                  type="number"
+                  step="0.1"
+                  value={manualBeta}
+                  onChange={e => setManualBeta(parseFloat(e.target.value) || 0)}
+                />
+              </label>
+              <label>
+                Scale:
+                <input
+                  type="number"
+                  value={manualScale}
+                  onChange={e => setManualScale(parseInt(e.target.value,10) || 0)}
+                />
+              </label>
+            </div>
+          )}
+        </fieldset>
+      )}
       </div>
   
       {/* Tabbed Interface for Plots */}

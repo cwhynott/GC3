@@ -5,7 +5,7 @@ CS-410: Generates spectrograms from uploaded files and stores them in MongoDB
 @collaborators None
 """
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 import numpy as np
 import matplotlib.pyplot as plt
@@ -46,8 +46,13 @@ def create_app():
         if 'cfile' not in request.files or 'metaFile' not in request.files:
             return jsonify({'error': 'Both .cfile and .sigmf-meta files are required'}), 400
         
-        run_airview = request.form.get('runAirview', 'true').lower() in ('1','true','yes','y')
-        print(f"[UPLOAD] runAirview flag = {run_airview}")
+        run_airview     = request.form.get('runAirview',  'true').lower()  in ('1','true','yes','y')
+        run_download    = request.form.get('downloadCSV','false').lower() in ('1','true','yes','y')
+        auto_params     = request.form.get('autoParams','false').lower()  in ('1','true','yes','y')
+        # pull manual overrides (fall back to Plugin defaults)
+        beta_manual     = float(request.form.get('beta',     Plugin.beta))
+        scale_manual    = int(  request.form.get('scale',    Plugin.scale))
+        print(f"[UPLOAD] runAirview={run_airview}, downloadCSV={run_download}, autoParams={auto_params}, beta={beta_manual}, scale={scale_manual}")
 
         cfile, metafile = request.files['cfile'], request.files['metaFile']
         original_name = cfile.filename.replace('.cfile', '')
@@ -62,22 +67,33 @@ def create_app():
         cfile_bytes = cfile.read()
         iq_data = np.frombuffer(cfile_bytes, dtype=np.complex64)
 
+        # instantiate Plugin with either auto‑opt or manual params
+        plugin = Plugin(
+            sample_rate=sigmf_metadata.sample_rate,
+            center_freq=sigmf_metadata.center_frequency,
+            run_parameter_optimization = 'y' if auto_params else 'n',
+            beta  = beta_manual,
+            scale = scale_manual
+        )
         if run_airview:
-            plugin = Plugin(
-                sample_rate=sigmf_metadata.sample_rate,
-                center_freq=sigmf_metadata.center_frequency,
-                run_parameter_optimization='n'
-            )
-            airview_result = plugin.run(iq_data)
-            airview_annotations = airview_result.get("annotations", [])
+            result = plugin.run(iq_data)
+            if auto_params:
+                # AirVIEW returns the best [beta, scale]
+                trained_beta, trained_scale = result.get("airview_beta_scale", [beta_manual, scale_manual])
+                airview_annotations = []
+            else:
+                airview_annotations = result.get("annotations", [])
+                trained_beta, trained_scale = beta_manual, scale_manual
         else:
-            airview_annotations = []
+            airview_annotations, trained_beta, trained_scale = [], beta_manual, scale_manual
 
-        print(f"[AIRVIEW] Found {len(airview_annotations)} transmitters")
 
         plot_ids, Pxx, freqs, bins = generate_plots(original_name, iq_data, sigmf_metadata)
-        pxx_csv_file_id = save_pxx_csv(original_name, Pxx, freqs, bins)
-
+        if run_download:
+            pxx_csv_file_id = save_pxx_csv(original_name, Pxx, freqs, bins)
+        else:
+            pxx_csv_file_id = None
+            
         # Save the metadata file in GridFS
         metafile.seek(0)  # Reset file pointer before saving
         meta_file_id = fs.put(metafile.read(), filename=f"{original_name}.sigmf-meta")
@@ -94,11 +110,37 @@ def create_app():
 
         return jsonify({
             'spectrogram': encoded_spectrogram,
-            'file_id': str(file_record_id),
-            'message': 'All files uploaded and saved successfully',
-            'annotations': airview_annotations  # From AirVIEW
+            'file_id':    str(file_record_id),
+            'message':    'All files uploaded and saved successfully',
+            'annotations':       airview_annotations,
+            'beta_used':         trained_beta,
+            'scale_used':        trained_scale
         })
 
+
+    @app.route('/file/<file_id>/csv', methods=['GET'])
+    def download_pxx_csv(file_id):
+        """Serves the Pxx CSV as a downloadable file."""
+        from bson import ObjectId
+        # find our record
+        rec = db.file_records.find_one({"_id": ObjectId(file_id)})
+        if not rec or "csv_file_id" not in rec:
+            return jsonify({"error":"CSV not found"}), 404
+
+        try:
+            grid_out = fs.get(ObjectId(rec["csv_file_id"]))
+            csv_bytes = grid_out.read()
+        except gridfs_errors.NoFile:
+            return jsonify({"error":"CSV missing in GridFS"}), 404
+
+        fname = f"{rec['filename']}_pxx.csv"
+        return Response(
+            csv_bytes,
+            mimetype="text/csv",
+            headers={
+                "Content-Disposition": f"attachment; filename={fname}"
+            }
+        )
 
     def generate_plots(original_name, iq_data, sigmf_metadata):
         """Generates and stores plots in GridFS."""
