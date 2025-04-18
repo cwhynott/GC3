@@ -183,6 +183,7 @@ const Statistics: React.FC<StatisticsProps> = ({ fileId, annotations }) => {
         return calculatedStats
           ? formatCalculatedStats(calculatedStats)
           : <p className="placeholder-message">No statistics calculated.</p>;
+          
       case 'transmission':
         return transmissionStats && transmissionStats.length > 0
           ? formatTransmissionStats(transmissionStats)

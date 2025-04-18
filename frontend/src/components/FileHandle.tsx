@@ -32,6 +32,7 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
   const [selectedCFileName, setSelectedCFileName] = useState<string | null>(null);
   const [selectedMetaFileName, setSelectedMetaFileName] = useState<string | null>(null);
   const [dots, setDots] = useState<string>(''); // Track the dots
+  const [runAirview, setRunAirview] = useState<boolean>(true);
 
 
   // State for tab switching
@@ -97,8 +98,13 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
       const formData = new FormData();
       formData.append('cfile', selectedCFile);
       formData.append('metaFile', selectedMetaFile);
+      // --- new ---
+      formData.append('runAirview', runAirview ? 'true' : 'false');
 
-      const response = await fetch('http://127.0.0.1:5000/upload', { method: 'POST', body: formData });
+      const response = await fetch('http://127.0.0.1:5000/upload', {
+        method: 'POST',
+        body: formData
+      });
       const result = await response.json();
 
       if (result.error) return setStatusMessage(`Error: ${result.error}`);
@@ -351,6 +357,15 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
         >
           Clear Current File
         </button>
+        {/* --- new toggle --- */}
+        <label style={{ marginLeft: '1rem' }}>
+          <input
+            type="checkbox"
+            checked={runAirview}
+            onChange={() => setRunAirview(!runAirview)}
+          />
+          {' '}Run AirVIEW
+        </label>
       </div>
   
       {/* Tabbed Interface for Plots */}

@@ -31,5 +31,4 @@ class FileData:
         self.sigmf = sigmf_metadata.__dict__
         self.fft = fft
 
-        # ✅ AirVIEW annotations
         self.annotations = annotations if annotations is not None else []

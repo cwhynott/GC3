@@ -395,7 +395,13 @@
     cursor: pointer;
     transition: background-color 0.3s;
   }
-  
+
+  .airview-btn {
+    background-color: #cc0005;
+    color: white;
+  }
+  .airview-btn:hover {background-color: #d52727;}
+
   .upload-btn {
     background-color: #4caf50;
     color: white;

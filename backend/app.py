@@ -45,6 +45,9 @@ def create_app():
         """Uploads files, generates plots, stores in MongoDB."""
         if 'cfile' not in request.files or 'metaFile' not in request.files:
             return jsonify({'error': 'Both .cfile and .sigmf-meta files are required'}), 400
+        
+        run_airview = request.form.get('runAirview', 'true').lower() in ('1','true','yes','y')
+        print(f"[UPLOAD] runAirview flag = {run_airview}")
 
         cfile, metafile = request.files['cfile'], request.files['metaFile']
         original_name = cfile.filename.replace('.cfile', '')
@@ -59,19 +62,18 @@ def create_app():
         cfile_bytes = cfile.read()
         iq_data = np.frombuffer(cfile_bytes, dtype=np.complex64)
 
-        # Run AirVIEW plugin
-        plugin = Plugin(
-            sample_rate=sigmf_metadata.sample_rate,
-            center_freq=sigmf_metadata.center_frequency,
-            run_parameter_optimization='n'  # Try changing to 'y' for optimization
-        )
-        airview_result = plugin.run(iq_data)
-        airview_annotations = airview_result.get("annotations", [])
+        if run_airview:
+            plugin = Plugin(
+                sample_rate=sigmf_metadata.sample_rate,
+                center_freq=sigmf_metadata.center_frequency,
+                run_parameter_optimization='n'
+            )
+            airview_result = plugin.run(iq_data)
+            airview_annotations = airview_result.get("annotations", [])
+        else:
+            airview_annotations = []
 
-        # Debug log
-        print(f"[AIRVIEW] Found {len(airview_annotations)} transmitters:")
-        for i, ann in enumerate(airview_annotations):
-            print(f"  TX #{i+1}: {ann}")
+        print(f"[AIRVIEW] Found {len(airview_annotations)} transmitters")
 
         plot_ids, Pxx, freqs, bins = generate_plots(original_name, iq_data, sigmf_metadata)
         pxx_csv_file_id = save_pxx_csv(original_name, Pxx, freqs, bins)
@@ -87,6 +89,8 @@ def create_app():
         file_record_id = db.file_records.insert_one(file_data.__dict__).inserted_id
 
         encoded_spectrogram = base64.b64encode(fs.get(plot_ids["spectrogram"]).read()).decode('utf-8')
+        
+        print("sending json to frontend")
 
         return jsonify({
             'spectrogram': encoded_spectrogram,
@@ -191,12 +195,14 @@ def create_app():
         """Saves the Pxx matrix as a CSV in GridFS."""
         pxx_csv_data = io.StringIO()
         csv_writer = csv.writer(pxx_csv_data)
-
+        
         csv_writer.writerow(["Frequency (Hz)"] + bins.tolist())
         for i, freq in enumerate(freqs):
             csv_writer.writerow([freq] + Pxx[i].tolist())
 
         pxx_csv_data.seek(0)
+        print("Generated csv")
+
         return fs.put(pxx_csv_data.getvalue().encode(), filename=f"{original_name}_pxx.csv")
     
     @app.route('/file/<file_id>', methods=['DELETE'])

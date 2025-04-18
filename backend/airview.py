@@ -65,7 +65,6 @@ class Plugin:
             airview_beta_scale = findOptimalParams(spectrogram)
             print(f"Optimal Beta and Scale: beta: {airview_beta_scale[0]}, scale: {airview_beta_scale[1]}")
         else:
-            print("FINDING")
             detected = findTransmitters(spectrogram, self.scale, self.beta, jaccard_threshold, max_gap_rows, fft_size)
             print("FOUND")
             # When making a detector, for the return, make a list, then for each detected emission, add one of these dicts to the list:
