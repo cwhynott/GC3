@@ -25,9 +25,9 @@ function App() {
       <header className="app-header">
         <div className="header-left">
           <a href={repoUrl} target="_blank" rel="noopener noreferrer" className="github-link">
-            <img src="/public/images/github-logo.png" alt="GitHub Repository" className="github-logo" />
+            <img src="images/github-logo.png" alt="GitHub Repository" className="github-logo" />
           </a>
-          <img src="/public/images/GC3-logo.png" alt="GC3 Logo" className="app-logo" />
+          <img src="images/GC3-logo.png" alt="GC3 Logo" className="app-logo" />
         </div>
         <Generate onPlotGenerated={handlePlotGenerated} />
       </header>
