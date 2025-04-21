@@ -36,9 +36,6 @@ const DisplayTabs: React.FC = () => {
   const [tabs, setTabs] = useState<{ id: number; label: string; fileId: string | null; annotations?: any[] }[]>([
     { id: 0, label: 'Tab 1', fileId: null, annotations: [] },
   ]);  
-  const [tabs, setTabs] = useState<{ id: number; label: string; fileId: string | null }[]>([
-    { id: 0, label: 'Tab 1', fileId: null },
-  ]);
   const [editingTabId, setEditingTabId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   
