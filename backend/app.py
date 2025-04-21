@@ -198,7 +198,6 @@ def create_app():
             for key, value in file_record.items():
                 print(f"{key}: {value}")
 
-            print("HELLOOOOOOOOOOO")
             # Delete PXX file
             try:
                 print(ObjectId(file_record["csv_file_id"]))
@@ -372,6 +371,7 @@ def create_app():
                 transmitters.append((start_time, start_freq))
             else:
                 # Place the first transmitter randomly in the top third of the matrix
+                # NOTE: Change as needed
                 top_third = (rows - active_time) // 3
                 min_position = max(0, top_third // 2)  # Ensure some margin from the very top
                 first_transmitter_pos = np.random.randint(min_position, min_position + top_third)
