@@ -102,9 +102,9 @@ def create_app():
         meta_file_id = fs.put(metafile.read(), filename=f"{original_name}.sigmf-meta")
 
         # Store metadata file ID in file_records
-        file_data = FileData(original_name, sigmf_metadata, pxx_csv_file_id, plot_ids)
+        file_data = FileData(original_name, sigmf_metadata, pxx_csv_file_id, plot_ids, airview_annotations)
         file_data.meta_file_id = meta_file_id  # Save metadata file ID
-        file_data.annotations = airview_annotations  # ✅ Save annotations
+        file_data.airview_annotations = airview_annotations  # Save annotations
         file_record_id = db.file_records.insert_one(file_data.__dict__).inserted_id
 
         encoded_spectrogram = base64.b64encode(fs.get(plot_ids["spectrogram"]).read()).decode('utf-8')
