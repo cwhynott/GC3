@@ -33,6 +33,9 @@ function CustomTabPanel(props: TabPanelProps) {
 
 const DisplayTabs: React.FC = () => {
   const [value, setValue] = useState(0);
+  const [tabs, setTabs] = useState<{ id: number; label: string; fileId: string | null; annotations?: any[] }[]>([
+    { id: 0, label: 'Tab 1', fileId: null, annotations: [] },
+  ]);  
   const [tabs, setTabs] = useState<{ id: number; label: string; fileId: string | null }[]>([
     { id: 0, label: 'Tab 1', fileId: null },
   ]);
@@ -56,13 +59,13 @@ const DisplayTabs: React.FC = () => {
     }
   };
 
-  const updateFileId = (tabId: number, newFileId: string | null) => {
+  const updateFileId = (tabId: number, newFileId: string | null, annotations?: any[]) => {
     setTabs(prevTabs =>
       prevTabs.map(tab =>
-        tab.id === tabId ? { ...tab, fileId: newFileId } : tab
+        tab.id === tabId ? { ...tab, fileId: newFileId, annotations } : tab
       )
     );
-  };
+  };  
 
   const handleDoubleClick = (tabId: number, currentLabel: string) => {
     setEditingTabId(tabId);
@@ -149,7 +152,7 @@ const DisplayTabs: React.FC = () => {
             {/* Conditionally render Statistics only if fileId exists */}
             {tab.fileId ? (
               <div className="statistics-container">
-                <Statistics fileId={tab.fileId} />
+                <Statistics fileId={tab.fileId} annotations={tab.annotations ?? []} />
               </div>
             ) : (
               <div className="statistics-container">
@@ -157,7 +160,10 @@ const DisplayTabs: React.FC = () => {
               </div>
             )}
             <div className="file-handle-container">
-              <FileHandle fileId={tab.fileId} onFileSelect={(fileId) => updateFileId(tab.id, fileId)} />
+              <FileHandle
+                fileId={tab.fileId}
+                onFileSelect={(fileId, annotations) => updateFileId(tab.id, fileId, annotations)}
+              />
             </div>
           </div>
         </CustomTabPanel>
