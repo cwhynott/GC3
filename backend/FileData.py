@@ -16,7 +16,7 @@ class FileData:
         :param pxx_csv_file_id: File ID of the power spectral density (Pxx) CSV file
         :param plot_ids: Dictionary containing file IDs for various plots
         :param fft: FFT size for spectrogram processing (default: 1024)
-        :param annotations: Optional list of annotations from AirVIEW
+        :param airview_annotations: Optional list of airview annotations from AirVIEW
         """
         self.filename = original_name
         self.raw_data_file_id = str(plot_ids["raw_data"]) if "raw_data" in plot_ids else None

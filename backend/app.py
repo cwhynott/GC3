@@ -85,7 +85,7 @@ def create_app():
                 trained_beta, trained_scale = result.get("airview_beta_scale", [beta_manual, scale_manual])
                 airview_annotations = []
             else:
-                airview_annotations = result.get("annotations", [])
+                airview_annotations = result.get("airview_annotations", [])
                 trained_beta, trained_scale = beta_manual, scale_manual
         else:
             airview_annotations, trained_beta, trained_scale = [], beta_manual, scale_manual
@@ -104,7 +104,7 @@ def create_app():
         # Store metadata file ID in file_records
         file_data = FileData(original_name, sigmf_metadata, pxx_csv_file_id, plot_ids, airview_annotations)
         file_data.meta_file_id = meta_file_id  # Save metadata file ID
-        file_data.airview_annotations = airview_annotations  # Save annotations
+        file_data.airview_annotations = airview_annotations  # Save airview annotations
         file_record_id = db.file_records.insert_one(file_data.__dict__).inserted_id
 
         encoded_spectrogram = base64.b64encode(fs.get(plot_ids["spectrogram"]).read()).decode('utf-8')
@@ -115,10 +115,32 @@ def create_app():
             'spectrogram': encoded_spectrogram,
             'file_id':    str(file_record_id),
             'message':    'All files uploaded and saved successfully',
-            'annotations':       airview_annotations,
+            'airview_annotations':       airview_annotations,
             'beta_used':         trained_beta,
-            'scale_used':        trained_scale
+            'scale_used':        trained_scale, 
+            'max_time': file_data.max_time,
+            'min_freq': file_data.min_freq,
+            'max_freq': file_data.max_freq,
         })
+    
+            
+    @app.route('/save-file', methods=['POST'])
+    def save_file():
+        try:
+            data = request.json
+            file_id = data.get('file_id')
+            annotations = data.get('annotations', [])
+            if not file_id:
+                return jsonify({"error": "File ID is required"}), 400
+            # Update the file record with annotations
+            db.file_records.update_one(
+                {"_id": ObjectId(file_id)},
+                {"$set": {"annotations": annotations}}
+            )
+            return jsonify({"message": "File saved successfully"})
+        except Exception as e:
+            print(f"Error saving file: {e}")
+            return jsonify({"error": str(e)}), 500
 
 
     @app.route('/file/<file_id>/csv', methods=['GET'])
@@ -322,21 +344,38 @@ def create_app():
         except Exception as e:
             return jsonify({'error': str(e)}), 500
         
-        
-    @app.route('/file/<file_id>/annotations', methods=['GET'])
-    def get_file_annotations(file_id):
-        """Fetch annotations from a previously uploaded file."""
-        if not ObjectId.is_valid(file_id):
-            return jsonify({'error': 'Invalid file ID format'}), 400
 
-        file_record = db.file_records.find_one({"_id": ObjectId(file_id)})
-        if not file_record:
-            return jsonify({'error': 'File not found'}), 404
+    @app.route('/file/<file_id>/data', methods=['GET'])
+    def get_file_data(file_id):
+        """Fetches fileData for a given file ID."""
+        try:
+            if not ObjectId.is_valid(file_id):
+                return jsonify({'error': 'Invalid file ID format'}), 400
 
-        # Retrieve annotations if stored
-        annotations = file_record.get("annotations", [])
-        return jsonify({'annotations': annotations})
-    
+            file_record = db.file_records.find_one({"_id": ObjectId(file_id)})
+            if not file_record:
+                return jsonify({'error': 'File not found'}), 404
+            
+            if "max_time" not in file_record:
+                return jsonify({'error': 'max_time not found in record'}), 400
+            if "min_freq" not in file_record:
+                return jsonify({'error': 'min_freq not found in record'}), 400
+            if "max_freq" not in file_record:
+                return jsonify({'error': 'max_freq not found in record'}), 400
+            if "airview_annotations" not in file_record:
+                return jsonify({'error': 'airview_annotations not found in record'}), 400
+
+            # Return relevant fields from fileData
+            return jsonify({
+                'max_time': file_record.get('max_time'),
+                'min_freq': file_record.get('min_freq'),
+                'max_freq': file_record.get('max_freq'),
+                'annotations': file_record.get('annotations', []), 
+                'airview_annotations': file_record.get("airview_annotations", [])
+            })
+        except Exception as e:
+            print(f"Error fetching file data: {str(e)}")
+            return jsonify({'error': str(e)}), 500
 
     @app.route('/refresh', methods=['POST'])
     def refresh_files():
