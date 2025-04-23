@@ -10,6 +10,7 @@ import { useState, useEffect, ChangeEvent, useRef } from 'react';
 import '../App.css';
 import SavedFiles from './SavedFiles';
 import Annotations from './Annotations';
+import { Annotation } from './Annotations';
 
 interface SavedFile {
   _id: string;
@@ -64,10 +65,10 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
   const [annotationComment, setAnnotationComment] = useState<string>(''); // State for the annotation comment
 
   // whitespace padding constants for calculating cursor positions
-  const left_padding = .125;
-  const right_padding = .1064;
+  const left_padding = .1249;
+  const right_padding = .1035;
   const top_padding = .1185;
-  const bottom_padding = .1203;
+  const bottom_padding = .112;
   
   // State for tab switching
   const [activeTab, setActiveTab] = useState<string>('spectrogram');
@@ -155,7 +156,7 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
       if (result.error) return setStatusMessage(`Error: ${result.error}`);
 
       console.log("Upload Response:", result);
-      console.log("[Frontend] Received AirVIEW annotations:", result.annotations);
+      console.log("[Frontend] Received AirVIEW annotations:", result.airview_annotations);
 
       if (result.airview_annotations && Array.isArray(result.airview_annotations)) {
         console.log("[Frontend] Upload received annotations:", result.airview_annotations);
@@ -182,6 +183,9 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
         setMaxFreq(result.max_freq);
         setMinFreq(result.min_freq);
       }
+
+      // Clear previous annotations
+      setAnnotations([]); 
 
       // Immediately set spectrogram image
       if (result.spectrogram) {
@@ -218,7 +222,6 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
       setStatusMessage('Upload failed. Please try again.');
     }
   };
-  
   
   // Handle clearing selected file
   const handleClearCurrentFile = () => {
@@ -292,7 +295,6 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
         });
         setCurrentFileId(null); // Reset the selected file
         onFileSelect(null); // Notify parent component to reset fileId
-
       }
   
       // Refresh the saved files list

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-interface Annotation {
+export interface Annotation {
   id: string;
   corners: { freq1: number; time1: number; freq2: number; time2: number };
   label: string;
@@ -52,6 +52,11 @@ const Annotations: React.FC<AnnotationsProps> = ({
   showCursors,
   setShowCursors,
 }) => {
+    const [expandedAnnotationId, setExpandedAnnotationId] = useState<string | null>(null);
+
+    const toggleExpand = (annotationId: string) => {
+    setExpandedAnnotationId((prev) => (prev === annotationId ? null : annotationId));
+  };
   return (
     <div className="annotations-container">
         <h3>Annotations</h3>
@@ -121,19 +126,21 @@ const Annotations: React.FC<AnnotationsProps> = ({
             <h3>Saved Annotations</h3>
             <table className="annotations-table">
                 <thead>
-                    <tr>
+                <tr>
                     <th></th> {/* No header for the delete column */}
                     <th>Label</th>
                     <th>Start Time (s)</th>
                     <th>End Time (s)</th>
                     <th>Start Freq (Hz)</th>
                     <th>End Freq (Hz)</th>
-                    <th>Display</th> {/* New column for the display checkbox */}
-                    </tr>
+                    <th>Display</th>
+                    <th>Comment</th> {/* New column for the expand/collapse button */}
+                </tr>
                 </thead>
                 <tbody>
-                    {annotations.map((annotation) => (
-                    <tr key={annotation.id}>
+                {annotations.map((annotation) => (
+                    <React.Fragment key={annotation.id}>
+                    <tr>
                         <td>
                         <button
                             className="btn delete-annotation-btn"
@@ -154,10 +161,26 @@ const Annotations: React.FC<AnnotationsProps> = ({
                             onChange={(e) => toggleAnnotationDisplay(annotation.id, e.target.checked)}
                         />
                         </td>
+                        <td>
+                        <button
+                            className="expand-comment-btn"
+                            onClick={() => toggleExpand(annotation.id)}
+                        >
+                            {expandedAnnotationId === annotation.id ? '▲' : '▼'}
+                        </button>
+                        </td>
                     </tr>
-                    ))}
+                    {expandedAnnotationId === annotation.id && (
+                        <tr className="annotation-comment-row">
+                        <td colSpan={8} className="annotation-comment-cell">
+                            <strong>Comment:</strong> {annotation.comment || 'No comment provided'}
+                        </td>
+                        </tr>
+                    )}
+                    </React.Fragment>
+                ))}
                 </tbody>
-                </table>
+            </table>
         </div>
         </div>
   );

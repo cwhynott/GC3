@@ -1302,3 +1302,25 @@
     input:checked + .slider:before {
       transform: translateX(20px);
     }
+
+    .annotation-comment-row {
+      background-color: #f9f9f9;
+    }
+    
+    .annotation-comment-cell {
+      padding: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+    
+    .expand-comment-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      color: #007bff;
+    }
+    
+    .expand-comment-btn:hover {
+      color: #0056b3;
+    }

@@ -290,20 +290,41 @@ def create_app():
 
             # Delete PXX file
             try:
-                print(ObjectId(file_record["csv_file_id"]))
-                fs.delete(ObjectId(file_record["csv_file_id"]))
-                print("PXX deleted")
-                print(ObjectId(file_record["iq_plot_file_id"]))
-                fs.delete(ObjectId(file_record["iq_plot_file_id"]))
-                print("IQ plot deleted")
-                fs.delete(ObjectId(file_record["spectrogram_file_id"]))
-                print("Spectrogram deleted")
-                fs.delete(ObjectId(file_record["time_domain_file_id"]))
-                print("Time domain plot deleted")
-                fs.delete(ObjectId(file_record["freq_domain_file_id"]))
-                print("Frequency domain plot deleted")
-                fs.delete(ObjectId(file_record["meta_file_id"]))
-                print("Metadata file deleted")
+                print("Attempting to delete associated files...")
+                if file_record['csv_file_id'] != "None":
+                    print(f"Deleting CSV file: {file_record['csv_file_id']}")
+                    fs.delete(ObjectId(file_record["csv_file_id"]))
+                    print("CSV file deleted")
+                
+                if file_record['raw_data_file_id'] is not None:
+                    print(f"Deleting raw data file: {file_record['raw_data_file_id']}")
+                    fs.delete(ObjectId(file_record["iq_plot_file_id"]))
+                    print("IQ plot file deleted")
+
+                if "iq_plot_file_id" in file_record:
+                    print(f"Deleting IQ plot file: {file_record['iq_plot_file_id']}")
+                    fs.delete(ObjectId(file_record["iq_plot_file_id"]))
+                    print("IQ plot file deleted")
+                
+                if "spectrogram_file_id" in file_record:
+                    print(f"Deleting Spectrogram file: {file_record['spectrogram_file_id']}")
+                    fs.delete(ObjectId(file_record["spectrogram_file_id"]))
+                    print("Spectrogram file deleted")
+                
+                if "time_domain_file_id" in file_record:
+                    print(f"Deleting Time Domain file: {file_record['time_domain_file_id']}")
+                    fs.delete(ObjectId(file_record["time_domain_file_id"]))
+                    print("Time Domain file deleted")
+                
+                if "freq_domain_file_id" in file_record:
+                    print(f"Deleting Frequency Domain file: {file_record['freq_domain_file_id']}")
+                    fs.delete(ObjectId(file_record["freq_domain_file_id"]))
+                    print("Frequency Domain file deleted")
+                
+                if "meta_file_id" in file_record:
+                    print(f"Deleting Metadata file: {file_record['meta_file_id']}")
+                    fs.delete(ObjectId(file_record["meta_file_id"]))
+                    print("Metadata file deleted")
                 
             except gridfs_errors.NoFile:
                 print(f"file not found.")
@@ -362,9 +383,12 @@ def create_app():
                 return jsonify({'error': 'min_freq not found in record'}), 400
             if "max_freq" not in file_record:
                 return jsonify({'error': 'max_freq not found in record'}), 400
-            if "airview_annotations" not in file_record:
-                return jsonify({'error': 'airview_annotations not found in record'}), 400
-
+            
+            print(f"max time: {file_record.get('max_time')}")
+            print(f"min freq: {file_record.get('min_freq')}")
+            print(f"max freq: {file_record.get('max_freq')}")
+            print(f"annotations: {file_record.get('annotations', [])}")
+            
             # Return relevant fields from fileData
             return jsonify({
                 'max_time': file_record.get('max_time'),
