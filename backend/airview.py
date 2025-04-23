@@ -102,7 +102,7 @@ class Plugin:
         else:
             return {
                 "data_output" : [],
-                "annotations" : annotations
+                "airview_annotations" : annotations
             }
     
 

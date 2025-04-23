@@ -11,7 +11,7 @@ const tabOptions = [
 
 interface StatisticsProps {
   fileId: string | null;
-  annotations?: any[];
+  airview_annotations?: any[];
 }
 
 
@@ -41,7 +41,7 @@ const MetadataSection: React.FC<{ title: string; items: [string, any][] }> = ({ 
   </div>
 );
 
-const Statistics: React.FC<StatisticsProps> = ({ fileId, annotations }) => {
+const Statistics: React.FC<StatisticsProps> = ({ fileId, airview_annotations }) => {
   const [metadata, setMetadata] = useState<MetadataType | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,19 +92,19 @@ const Statistics: React.FC<StatisticsProps> = ({ fileId, annotations }) => {
       }
     };
     fetchCalculatedStats();  
-    if (annotations && annotations.length > 0) {
-      console.log("Setting transmission stats from props:", annotations);
-      setTransmissionStats(annotations);
+    if (airview_annotations && airview_annotations.length > 0) {
+      console.log("Setting transmission stats from props:", airview_annotations);
+      setTransmissionStats(airview_annotations);
     } else {
       const fetchTransmissionStats = async () => {
         try {
-          const response = await fetch(`http://127.0.0.1:5000/file/${fileId}/airview`);
+          const response = await fetch(`http://127.0.0.1:5000/file/${fileId}/data`);
           const result = await response.json();
     
-          console.log("[Frontend] Fallback fetched AirVIEW annotations:", result.annotations);
+          console.log("[Frontend] Fallback fetched AirVIEW annotations:", result.airview_annotations);
     
-          if (result.annotations && Array.isArray(result.annotations)) {
-            setTransmissionStats(result.annotations);
+          if (result.airview_annotations && Array.isArray(result.airview_annotations)) {
+            setTransmissionStats(result.airview_annotations);
           }
         } catch (err) {
           console.error("Failed to fetch AirVIEW results:", err);
@@ -112,17 +112,17 @@ const Statistics: React.FC<StatisticsProps> = ({ fileId, annotations }) => {
       };
       fetchTransmissionStats();
     }
-  }, [annotations, fileId]);
+  }, [airview_annotations, fileId]);
 
 
   const formatTransmissionStats = (data: any[]) => {
-    const fields: [string, any][][] = data.map((annotation, index) => ([
+    const fields: [string, any][][] = data.map((airview_annotations, index) => ([
       ['Transmitter #', index + 1],
-      ['Frequency Lower Edge (Hz)', annotation['core:freq_lower_edge']],
-      ['Frequency Upper Edge (Hz)', annotation['core:freq_upper_edge']],
-      ['Sample Start', annotation['core:sample_start']],
-      ['Sample Count', annotation['core:sample_count']],
-      ['Label', annotation['core:label']]
+      ['Frequency Lower Edge (Hz)', airview_annotations['core:freq_lower_edge']],
+      ['Frequency Upper Edge (Hz)', airview_annotations['core:freq_upper_edge']],
+      ['Sample Start', airview_annotations['core:sample_start']],
+      ['Sample Count', airview_annotations['core:sample_count']],
+      ['Label', airview_annotations['core:label']]
     ]));
   
     return (

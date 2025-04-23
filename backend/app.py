@@ -110,6 +110,8 @@ def create_app():
         encoded_spectrogram = base64.b64encode(fs.get(plot_ids["spectrogram"]).read()).decode('utf-8')
         
         print("sending json to frontend")
+        print("AIRVIEW ANNOTATIONS: ")
+        print(airview_annotations)
 
         return jsonify({
             'spectrogram': encoded_spectrogram,
@@ -121,6 +123,7 @@ def create_app():
             'max_time': file_data.max_time,
             'min_freq': file_data.min_freq,
             'max_freq': file_data.max_freq,
+            'airview_annotations': file_data.airview_annotations,
         })
     
             
