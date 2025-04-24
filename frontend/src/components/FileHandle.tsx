@@ -639,6 +639,13 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'spectrogram') {
+      // Trigger a re-render of annotations
+      setAnnotations((prev) => [...prev]);
+    }
+  }, [activeTab]);
   
   return (
     <main className="enhanced-app-container">
@@ -824,7 +831,7 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
               )}
   
               {/* Render Annotations */}
-              {annotations
+              {activeTab === 'spectrogram'  && annotations
                 .filter((annotation) => annotation.display) // Only render annotations with display: true
                 .map((annotation) => {
                   const left = calculatePositionFromFreq(annotation.corners.freq1);
