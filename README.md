@@ -46,8 +46,6 @@ GC3 is a comprehensive web application for uploading, visualizing, and analyzing
 
 ## Running the Application
 
-### Development Mode
-
 Run backend and frontend in separate terminals:
 
 1. **Start the backend server**:
