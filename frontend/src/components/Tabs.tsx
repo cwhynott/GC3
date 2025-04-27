@@ -33,8 +33,8 @@ function CustomTabPanel(props: TabPanelProps) {
 
 const DisplayTabs: React.FC = () => {
   const [value, setValue] = useState(0);
-  const [tabs, setTabs] = useState<{ id: number; label: string; fileId: string | null; annotations?: any[] }[]>([
-    { id: 0, label: 'Tab 1', fileId: null, annotations: [] },
+  const [tabs, setTabs] = useState<{ id: number; label: string; fileId: string | null; airview_annotations?: any[] }[]>([
+    { id: 0, label: 'Tab 1', fileId: null, airview_annotations: [] },
   ]);  
   const [editingTabId, setEditingTabId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState<string>('');
@@ -56,10 +56,10 @@ const DisplayTabs: React.FC = () => {
     }
   };
 
-  const updateFileId = (tabId: number, newFileId: string | null, annotations?: any[]) => {
+  const updateFileId = (tabId: number, newFileId: string | null, airview_annotations?: any[]) => {
     setTabs(prevTabs =>
       prevTabs.map(tab =>
-        tab.id === tabId ? { ...tab, fileId: newFileId, annotations } : tab
+        tab.id === tabId ? { ...tab, fileId: newFileId, airview_annotations } : tab
       )
     );
   };  
@@ -149,7 +149,7 @@ const DisplayTabs: React.FC = () => {
             {/* Conditionally render Statistics only if fileId exists */}
             {tab.fileId ? (
               <div className="statistics-container">
-                <Statistics fileId={tab.fileId} annotations={tab.annotations ?? []} />
+                <Statistics fileId={tab.fileId} airview_annotations={tab.airview_annotations ?? []} />
               </div>
             ) : (
               <div className="statistics-container">
@@ -159,7 +159,7 @@ const DisplayTabs: React.FC = () => {
             <div className="file-handle-container">
               <FileHandle
                 fileId={tab.fileId}
-                onFileSelect={(fileId, annotations) => updateFileId(tab.id, fileId, annotations)}
+                onFileSelect={(fileId, airview_annotations) => updateFileId(tab.id, fileId, airview_annotations)}
               />
             </div>
           </div>
