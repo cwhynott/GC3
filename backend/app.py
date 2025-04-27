@@ -21,6 +21,7 @@ import csv
 import os
 import json
 from airview import Plugin
+from matplotlib.colors import LinearSegmentedColormap, to_rgb
 
 import matplotlib
 # Use the Agg backend for Matplotlib to avoid using any X server
@@ -42,6 +43,14 @@ def create_app():
 
     db = client['files_db']
     fs = GridFS(db)
+
+    # NOTE: For those with deuteranopia, change cmap='viridis' to cmap='accessible_cmap' in
+    #       plot_spectrogram() and generate_data() to use a color palette that is more accessible 
+    #       for colorblind users.
+    SPEC_HEX_COLORS = ["#e4ff7a", "#ffe81a", "#ffbd00", "#ffa000", "#fc7f00"] # CITE: https://github.com/wistia/heatmap-palette
+    rgb_colors = [to_rgb(color) for color in SPEC_HEX_COLORS] # Convert hex to RGB
+    custom_cmap = LinearSegmentedColormap.from_list('accessible_cmap', rgb_colors, N=256) # Create a custom colormap
+    plt.register_cmap(cmap=custom_cmap) # Register the colormap with Matplotlib
 
     @app.route('/upload', methods=['POST'])
     def upload_file():
@@ -251,7 +260,6 @@ def create_app():
             iq_data,
             Fs=sigmf_metadata.sample_rate,
             Fc=sigmf_metadata.center_frequency,
-            cmap='viridis'
         )
         # Overlay image representation of Pxx (Power Spectral Density)
         ax.imshow(10 * np.log10(Pxx.T), aspect='auto', extent=[freqs[0], freqs[-1], bins[-1], 0], cmap='viridis')
