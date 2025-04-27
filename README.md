@@ -76,10 +76,6 @@ Run backend and frontend in separate terminals:
 
 1. Click "Generate Synthetic Data" in the application header
 2. Configure parameters:
-   - Rows and columns for matrix size
-   - Number of transmitters to simulate
-   - Signal and noise parameters
-   - Placement method (random or equally spaced)
 3. Click "Generate" to create the data
 4. Download CSV if needed for further analysis
 
@@ -131,7 +127,3 @@ GC3/
 - Will Cho 
 - Grace Johnson
 - Connor Whynott
-
-## License
-
-This project is developed as part of CS410 coursework.
