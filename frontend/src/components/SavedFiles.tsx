@@ -30,17 +30,23 @@ const SavedFiles: React.FC<SavedFilesProps> = ({ savedFiles, onDelete, onLoad })
 
   return (
     <div className="saved-files">
-      <h2 style={{ color: '#2c3e50' }}>Saved Files</h2>
-
-      {/* Search Bar */}
-      <input
-        type="text"
-        placeholder="Search files..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="search-bar"
-      />
-
+      {/* Fixed Header */}
+      <div className="saved-files-header">
+        <h2>Saved Files</h2>
+      </div>
+      
+      {/* Fixed Search Bar */}
+      <div className="search-container">
+        <input
+          type="text"
+          placeholder="Search files..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-bar"
+        />
+      </div>
+      
+      {/* Scrollable File List */}
       <ul>
         {filteredFiles.length > 0 ? (
           filteredFiles.map((file) => (
@@ -50,7 +56,7 @@ const SavedFiles: React.FC<SavedFilesProps> = ({ savedFiles, onDelete, onLoad })
                 className="delete-btn"
                 title="Delete file"
               >
-                <img src="/src/assets/trash-icon.png" alt="Delete" className="trash-icon" />
+                <img src="/images/trash-icon.png" alt="Delete" className="trash-icon" />
               </button>
               <span className="file-name">{file.filename}</span>
               <button onClick={() => onLoad(file._id)}>Load</button>
