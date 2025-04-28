@@ -1,4 +1,4 @@
-# GC3: RF Signal Analysis Platform
+# GC3
 
 GC3 is a comprehensive web application for uploading, visualizing, and analyzing radio frequency (RF) signal data. It provides an intuitive interface for working with SigMF-compatible files and includes powerful analysis tools.
 
