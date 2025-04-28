@@ -146,7 +146,7 @@ const Annotations: React.FC<AnnotationsProps> = ({
                             className="btn delete-annotation-btn"
                             onClick={() => deleteAnnotation(annotation.id)}
                         >
-                            <img src="/src/assets/trash-icon.png" alt="Delete" className="trash-icon" />
+                            <img src="images/trash-icon.png" alt="Delete" className="trash-icon" />
                         </button>
                         </td>
                         <td>{annotation.label}</td>
