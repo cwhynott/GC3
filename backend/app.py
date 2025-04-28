@@ -491,6 +491,7 @@ def create_app():
         }
 
         return jsonify(metadata)
+    
     # NOTE: Visualization Limitation
     # The spectrogram visualization may not visibly reflect changes to noise_mean due to 
     # matplotlib's automatic color scaling. plt.imshow() automatically rescales the colormap
@@ -500,11 +501,13 @@ def create_app():
     # correct numerical values with the specified noise_mean.
     def generate_data(rows, cols, num_transmitters, transmitter_mean, transmitter_sd, noise_mean, noise_sd, bandwidth, active_time, placement_method):
         matrix = np.random.normal(loc=noise_mean, scale=noise_sd, size=(rows, cols))
+        """Generate a syntehtic data matrix with Gaussian noise and inject transmitter signals."""
 
         transmitters = []
         center_freq = cols // 2  # Center frequency bin
 
         def is_overlapping(start_time, start_freq):
+            """Check if the new transmitter overlaps with existing ones."""
             for t_start, f_start in transmitters:
                 if (start_time < t_start + active_time and start_time + active_time > t_start and
                     start_freq < f_start + bandwidth and start_freq + bandwidth > f_start):
@@ -519,8 +522,8 @@ def create_app():
                     if not is_overlapping(start_time, start_freq):
                         transmitters.append((start_time, start_freq))
                         break
+
         elif placement_method == "equally_spaced":
-    
             if num_transmitters == 1:
                 # Handle single transmitter case - place it randomly
                 start_time = np.random.randint(0, rows - active_time + 1)
