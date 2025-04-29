@@ -648,7 +648,7 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
   }, [activeTab]);
   
   return (
-    <main className="enhanced-app-container">
+    <main className="file-handle-content">
       {/* Status Banner */}
       <p className="status-banner">{statusMessage}{dots}</p>
   
