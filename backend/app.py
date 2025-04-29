@@ -154,6 +154,31 @@ def create_app():
             print(f"Error saving file: {e}")
             return jsonify({"error": str(e)}), 500
 
+    @app.route('/<file_id>/rename_file', methods=['PUT'])
+    def rename_file(file_id):
+        """Renames file that is displayed under 'Saved Files'"""
+        try:
+            data = request.json
+            new_filename = data.get('filename')
+            
+            if not new_filename:
+                return jsonify({"error": "New filename is required"}), 400
+
+            # Update filename in file_records
+            result = db.file_records.update_one(
+                {"_id": ObjectId(file_id)},
+                {"$set": {"filename": new_filename}}
+            )
+
+            if result.matched_count == 0:
+                return jsonify({"error": "File not found"}), 404
+
+            return jsonify({"message": "File renamed successfully"})
+
+        except Exception as e:
+            print(f"Error renaming file: {e}")
+            return jsonify({"error": str(e)}), 500
+
 
     @app.route('/file/<file_id>/csv', methods=['GET'])
     def download_pxx_csv(file_id):

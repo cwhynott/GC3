@@ -137,6 +137,7 @@ const DisplayTabs: React.FC = () => {
                 </IconButton>
               }
               iconPosition="end"
+              sx={{ textTransform: 'none' }}
             />
           ))}
           <Button variant="contained" onClick={handleAdd}>Add Tab</Button>
