@@ -25,8 +25,8 @@ interface FileHandleProps {
 
 const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
   // State variables
-  const [verticalCursors, setVerticalCursors] = useState<number[]>([50, 150]); // Default positions for vertical cursors
-  const [horizontalCursors, setHorizontalCursors] = useState<number[]>([50, 150]); // Default positions for horizontal cursors
+  const [verticalCursors, setVerticalCursors] = useState<number[]>([200, 300]); // Default positions for vertical cursors
+  const [horizontalCursors, setHorizontalCursors] = useState<number[]>([100, 200]); // Default positions for horizontal cursors
   const [showCursors, setShowCursors] = useState<boolean>(true);
   const [currentFileId, setCurrentFileId] = useState<string | null>(fileId); // Track the currently selected file ID
   const [selectedCFile, setSelectedCFile] = useState<File | null>(null);
@@ -66,7 +66,7 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
 
   // whitespace padding constants for calculating cursor positions
   const left_padding = .1249;
-  const right_padding = .1035;
+  const right_padding = .1021;
   const top_padding = .1185;
   const bottom_padding = .112;
   
@@ -440,19 +440,36 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
     const onMouseMove = (moveEvent: MouseEvent) => {
       if (type === 'vertical') {
         const newX = moveEvent.clientX - containerRect.left;
-        console.log(minFreq)
-        console.log(maxFreq)
-        console.log(maxTime)
+  
+        // Calculate the frequency at the new position
+        const newFreq = calculateVerticalCursorPosition(newX);
+  
+        // Constrain the frequency to the bounds
+        const constrainedFreq = Math.max(minFreq, Math.min(newFreq, maxFreq));
+  
+        // Calculate the corresponding position in pixels
+        const constrainedX = calculatePositionFromFreq(constrainedFreq);
+  
         setVerticalCursors((prev) => {
           const updated = [...prev];
-          updated[index] = Math.max(0, Math.min(newX, containerRect.width));
+          updated[index] = Math.max(0, Math.min(constrainedX, containerRect.width)); // Ensure cursor stays within container
           return updated;
         });
       } else if (type === 'horizontal') {
         const newY = moveEvent.clientY - containerRect.top;
+  
+        // Calculate the time at the new position
+        const newTime = calculateHorizontalCursorPosition(newY);
+  
+        // Constrain the time to the bounds
+        const constrainedTime = Math.max(0, Math.min(newTime, maxTime));
+  
+        // Calculate the corresponding position in pixels
+        const constrainedY = calculatePositionFromTime(constrainedTime);
+  
         setHorizontalCursors((prev) => {
           const updated = [...prev];
-          updated[index] = Math.max(0, Math.min(newY, containerRect.height));
+          updated[index] = Math.max(0, Math.min(constrainedY, containerRect.height)); // Ensure cursor stays within container
           return updated;
         });
       }
