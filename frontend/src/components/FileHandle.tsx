@@ -25,8 +25,8 @@ interface FileHandleProps {
 
 const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
   // State variables
-  const [verticalCursors, setVerticalCursors] = useState<number[]>([50, 150]); // Default positions for vertical cursors
-  const [horizontalCursors, setHorizontalCursors] = useState<number[]>([50, 150]); // Default positions for horizontal cursors
+  const [verticalCursors, setVerticalCursors] = useState<number[]>([200, 300]); // Default positions for vertical cursors
+  const [horizontalCursors, setHorizontalCursors] = useState<number[]>([100, 200]); // Default positions for horizontal cursors
   const [showCursors, setShowCursors] = useState<boolean>(true);
   const [currentFileId, setCurrentFileId] = useState<string | null>(fileId); // Track the currently selected file ID
   const [selectedCFile, setSelectedCFile] = useState<File | null>(null);
