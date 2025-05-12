@@ -1,3 +1,11 @@
+/**
+ * CS-410: Component for statistics features
+ * @file FileHandle.tsx
+ * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
+ * @collaborators None
+ * @description This component is used to upload, view and manage files.
+ */
+
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 

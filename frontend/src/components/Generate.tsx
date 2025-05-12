@@ -1,5 +1,5 @@
 /**
- * CS-410: Generate Synthetic data component.
+ * CS-410: Generate Synthetic data component
  * @file Generate.tsx
  * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
  * @collaborators None

@@ -1,3 +1,11 @@
+/**
+ * CS-410: Component for annotation features
+ * @file Annotations.tsx
+ * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
+ * @collaborators None
+ * @description This component is used to upload, view and manage files.
+ */
+
 import React, { useState } from 'react';
 
 export interface Annotation {
@@ -123,7 +131,7 @@ const Annotations: React.FC<AnnotationsProps> = ({
 
         {/* Saved Annotations Section */}
         <div className="saved-annotations-container">
-            <h3>Saved Annotations</h3>
+            <h2>Saved Annotations</h2>
             <table className="annotations-table">
                 <thead>
                 <tr>

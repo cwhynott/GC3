@@ -16,6 +16,7 @@
     text-align: center;
   }
   
+  /* Main container that wraps the entire application */
   .enhanced-app-container {
     font-family: Arial, sans-serif;
     padding: 2rem;
@@ -28,6 +29,7 @@
      2. HEADER STYLES
      ======================================== */
   
+  /* App header with logo and generate button */
   .app-header {
     font-size: 2.5rem;
     font-weight: bold;
@@ -50,6 +52,7 @@
     padding-bottom: 10px;
   }
   
+  /* Button positioned absolutely within the header */
   .generate-button {
     position: absolute;
     top: 39%;
@@ -78,6 +81,7 @@
     margin-right: 15px;
   }
   
+  /* GitHub logo positioned absolutely in top-left of header */
   .github-logo {
     width: 32px;
     height: 32px;
@@ -95,6 +99,7 @@
      3. LAYOUT STYLES
      ======================================== */
   
+  /* Flexbox layout for tabs arrangement */
   .tab-layout {
     display: flex;
     flex-direction: row;
@@ -102,6 +107,7 @@
     height: 100%;
   }
   
+  /* Horizontal layout for tab content */
   .tab-content {
     display: flex;
     flex-direction: row;
@@ -116,6 +122,7 @@
     flex: 1;
   }
   
+  /* Main content container */
   .main-content {
     flex-grow: 1;
     display: flex;
@@ -128,6 +135,7 @@
      4. TAB NAVIGATION STYLES
      ======================================== */
   
+  /* Container for tab navigation  */
   .tabs-container {
     flex-grow: 1;
     display: flex;
@@ -136,6 +144,7 @@
     overflow-y: auto;
   }
   
+  /* Tab button styling */
   .tabs button {
     background-color: #007BFF;
     color: white;
@@ -173,12 +182,13 @@
      5. COMPONENT CONTAINER STYLES
      ======================================== */
   
-     .flex-wrapper {
-      display: flex;
-      gap: 1rem; /* spacing between containers */
-      align-items: stretch; /* makes all children same height */
-    }
+    .flex-wrapper {
+    display: flex;
+    gap: 1rem; /* spacing between containers */
+    align-items: stretch; /* makes all children same height */
+  }
 
+  /* Left sidebar for statistics display */
   .statistics-container {
     width: 30%;
     min-width: 250px;
@@ -198,6 +208,7 @@
     margin: 0 auto;
   }
   
+  /* Right side container for file handling */
   .file-handle-container {
     flex-grow: 1;
     background-color: #ffffff;
@@ -209,7 +220,8 @@
     justify-content: space-between;
     min-height: 400px;
   }
-  
+
+  /* Status notification bar */
   .status-banner {
     background-color: #eaf6ff;
     padding: 1rem;
@@ -298,6 +310,7 @@
      7. SAVED FILES STYLES
      ======================================== */
   
+  /* Container for saved files */
   .saved-files {
     background-color: #fff;
     padding: 0;
@@ -309,12 +322,14 @@
     overflow: hidden;
   }
 
+  /* Non-scrolling header that stays fixed at top */
   .saved-files-header {
     padding: 1rem 1.5rem 0.5rem;
     border-bottom: 1px solid #eee;
     flex-shrink: 0;
   }
   
+  /* Scrollable list container */
   .saved-files ul {
     list-style-type: none;
     padding: 0.5rem 1.5rem;
@@ -405,6 +420,7 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
 
+  /* Fixed search bar area that doesn't scroll */
   .search-container {
     padding: 0.5rem 1.5rem 1rem;
     border-bottom: 1px solid #eee;
@@ -599,6 +615,7 @@
      11. POPUP AND MODAL STYLES
      ======================================== */
   
+  /* Full-screen overlay for popups */
   .popup-overlay {
     position: fixed;
     top: 0;
@@ -612,6 +629,7 @@
     z-index: 9999;
   }
   
+  /* Container for side-by-side popup windows */
   .dual-popup-overlay {
     position: fixed;
     top: 0;
@@ -625,6 +643,7 @@
     z-index: 9999;
   }
   
+  /* Popup content area */
   .popup-content, .spectrogram-popup-content {
     background-color: #fff;
     padding: 25px;
@@ -734,33 +753,33 @@
     padding: 0;
   }
 
-.download-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 0px;
-}
+  .download-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 0px;
+  }
 
-.download-btn {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  transition: background-color 0.3s ease-in-out;
-}
+  .download-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s ease-in-out;
+  }
 
-.download-btn:hover {
-  background-color: #218838;
-}
+  .download-btn:hover {
+    background-color: #218838;
+  }
 
-.download-btn::before {
-  margin-right: 8px;
-  font-size: 16px;
-}
+  .download-btn::before {
+    margin-right: 8px;
+    font-size: 16px;
+  }
   
   /* ========================================
      12. FORM STYLES
@@ -896,20 +915,19 @@
   }
 
   /* container for the two vertical switches + params box */
-.switch-panel {
-  display: flex;
-  align-items: flex-start;
-  gap: 2rem;           /* space between switches and params */
-  margin-top: 1rem;    /* lift it a bit from the upload button */
-}
+  .switch-panel {
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+    margin-top: 1rem;
+  }
 
-/* stack the two on/off switches */
-.toggle-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
+  /* stack the two on/off switches */
+  .toggle-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
 
   .toggle-group {
     display: flex;
@@ -917,7 +935,7 @@
     gap: 1rem;
     margin-top: 1rem;
   }
-  
+
   .toggle-switch {
     position: relative;
     display: inline-block;
@@ -952,433 +970,432 @@
   .toggle-switch input:checked + .slider:before {
     transform: translateX(20px);
   }
-  
-  /* style for the params fieldset */
-.param-box {
-  border: 1px solid #ddd;
-  padding: 0.75rem;
-  min-width: 200px;
-}
-.param-box legend {
-  font-size: 0.9rem;
-}
-.param-form {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-.param-form input[type="number"] { width: 4ch; padding: 2px 4px; }
+    
+    /* style for the params fieldset */
+  .param-box {
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+    min-width: 200px;
+  }
+  .param-box legend {
+    font-size: 0.9rem;
+  }
+  .param-form {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+  .param-form input[type="number"] { width: 4ch; padding: 2px 4px; }
 
   /* ========================================
-     15. CURSOR STYLES
-     ======================================== */
+    15. CURSOR STYLES
+    ======================================== */
 
-     .spectrogram-container {
-      position: relative;
-      display: inline-block;
-    }
-    
-    .vertical-cursor {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background-color: red;
-      cursor: ew-resize;
-    }
-    
-    .horizontal-cursor {
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background-color: red;
-      cursor: ns-resize;
-    }
-    
-    .plot-image {
-      display: block;
-      max-width: 100%;
-      height: auto;
-    }
+    .spectrogram-container {
+    position: relative;
+    display: inline-block;
+  }
 
-    .cursor-label {
-      position: absolute;
-      background-color: rgba(0, 0, 0, 0.7);
-      color: white;
-      font-size: 12px;
-      padding: 2px 5px;
-      border-radius: 4px;
-      white-space: nowrap;
-    }
-    
-    .vertical-cursor .cursor-label {
-      position: absolute;
-      top: 0px; /* Adjust this value to move the label slightly lower */
-      left: -50%; /* Center the label horizontally */
-      transform: translateX(-50%);
-      padding: 2px 4px; /* Optional: Add padding for better readability */
-      font-size: 12px; /* Adjust font size if needed */
-      border-radius: 4px; /* Optional: Add rounded corners */
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Optional: Add a shadow for better contrast */
-    }
-    
-    .horizontal-cursor .cursor-label {
-      left: -50px; /* Position to the left of the horizontal cursor */
-      top: 50%;
-      transform: translateY(-50%);
-      left:0px
-    }
+  .vertical-cursor {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: red;
+    cursor: ew-resize;
+  }
 
-    /* ========================================
-     16. ANNOTATION CONTAINER
-     ======================================== */
+  .horizontal-cursor {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: red;
+    cursor: ns-resize;
+  }
 
-     .annotations-container {
-      padding: 1rem;
-      background-color: white;
-      border-radius: 8px;
-      margin-top: 20px; /* Add space above the annotations container */
-      margin-bottom: 30px; /* Add space below the annotations container */
-    }
-    
-    .annotations-container h3 {
-      margin: 0 0 10px;
-      font-size: 24px;
-      font-weight: bold;
-      color: #333;
-    }
-    
-    .annotations-container p {
-      margin: 0;
-      font-size: 14px;
-      color: #555;
-    }
-    
-    .annotation-creation-box {
-      background-color: #eaeaea; /* Slightly darker background */
-      padding: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      display: flex;
-      gap: 20px; /* Space between the red box and inputs */
-      align-items: flex-start; /* Align items at the top */
-    }
-    
-    /* Red-bordered rectangle for annotation preview */
-    .annotation-preview {
-      position: relative;
-      width: 150px;
-      height: 100px;
-      border: 2px solid red;
-    }
-    
-    /* Corner labels for the red-bordered rectangle */
-    .corner-label {
-      position: absolute;
-      font-size: 8px;
-      background-color: white;
-      padding: 2px 4px;
-      border-radius: 4px;
-    }
-    
-    .corner-label.top-left {
-      top: -10px;
-      left: -10px;
-    }
-    
-    .corner-label.top-right {
-      top: -10px;
-      right: -10px;
-    }
-    
-    .corner-label.bottom-left {
-      bottom: -10px;
-      left: -10px;
-    }
-    
-    .corner-label.bottom-right {
-      bottom: -10px;
-      right: -10px;
-    }
-    
-    /* Inputs and Button Layout */
-    .annotation-inputs {
-      display: flex;
-      flex: 1;
-      gap: 10px; /* Space between inputs and the button */
-    }
-    
-    .inputs-container {
-      display: flex;
-      flex-direction: column;
-      flex: 1; /* Take up available space */
-      gap: 10px; /* Space between label and comment inputs */
-    }
-    
-    .annotation-label-input {
-      padding: 5px 10px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    
-    .annotation-label-input,
-    .annotation-comment-input {
-      font-family: Arial, sans-serif; /* Set a consistent font */
-      font-size: 14px; /* Set a consistent font size */
-      padding: 5px 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      color: #333; /* Ensure consistent text color */
-    }
+  .plot-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
 
-    .annotation-label-input::placeholder,
-    .annotation-comment-input::placeholder {
-      font-family: Arial, sans-serif; /* Match the font for placeholders */
-      font-size: 14px; /* Match the font size for placeholders */
-      color: #888; /* Optional: Set a placeholder color */
-    }
-    
-    .create-annotation-btn {
-      padding: 10px 15px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      align-self: flex-start; /* Align button to the top */
-    }
+  .cursor-label {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 12px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
 
-    .annotation-box {
-      position: absolute;
-      border: 2px solid red;
-      background-color: rgba(255, 0, 0, 0.2); /* Optional: Add a semi-transparent background */
-      pointer-events: none; /* Allow mouse events to pass through */
-    }
-    
-    .annotation-label {
-      pointer-events: auto; /* Optional: If you want the label to remain interactive */
-    }
-    
-    .create-annotation-btn:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
-    }
+  .vertical-cursor .cursor-label {
+    position: absolute;
+    top: 0px; /* Adjust this value to move the label slightly lower */
+    left: -50%; /* Center the label horizontally */
+    transform: translateX(-50%);
+    padding: 2px 4px; /* Optional: Add padding for better readability */
+    font-size: 12px; /* Adjust font size if needed */
+    border-radius: 4px; /* Optional: Add rounded corners */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Optional: Add a shadow for better contrast */
+  }
 
-    /* Saved Annotations Section */
-    .saved-annotations-container {
-      margin-top: 20px;
-      background-color: #fff;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    
-    .saved-annotations-container h3 {
-      margin-bottom: 10px;
-      font-size: 20px;
-      font-weight: bold;
-      color: #333;
-    }
-    
-    /* Annotations Table */
-    .annotations-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-    }
-    
-    .annotations-table th,
-    .annotations-table td {
-      padding: 10px;
-      border-bottom: 1px solid #ccc; /* Thin gray line */
-    }
-    
-    .annotations-table th {
-      background-color: #f9f9f9;
-      color: #555;
-      font-size: 14px;
-      font-weight: normal;
-    }
-    
-    .annotations-table td {
-      font-size: 14px;
-      color: #333;
-    }
-    
-    /* Delete Button */
-    .delete-annotation-btn {
-      padding: 5px 10px;
-      background-color: red;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    
-    .delete-annotation-btn:hover {
-      background-color: #c82333;
-    }
+  .horizontal-cursor .cursor-label {
+    left: -50px; /* Position to the left of the horizontal cursor */
+    top: 50%;
+    transform: translateY(-50%);
+    left:0px
+  }
 
-    .annotations-table th,
-    .annotations-table td {
-      padding: 10px;
-      border-bottom: 1px solid #ccc; /* Thin gray line */
-    }
+  /* ========================================
+    16. ANNOTATION CONTAINER
+    ======================================== */
 
-    .annotations-table th {
-      background-color: #f9f9f9;
-      color: #555;
-      font-size: 14px;
-      font-weight: normal;
-      text-align: left;
-    }
+  .annotations-container {
+    padding: 1rem;
+    background-color: white;
+    border-radius: 8px;
+    margin-top: 20px; /* Add space above the annotations container */
+    margin-bottom: 30px; /* Add space below the annotations container */
+  }
 
-    .annotations-table td {
-      font-size: 14px;
-      color: #333;
-    }
+  .annotations-container h3 {
+    margin: 0 0 10px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+  }
 
-    .annotations-table input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      cursor: pointer;
-    }
+  .annotations-container p {
+    margin: 0;
+    font-size: 14px;
+    color: #555;
+  }
 
-    .toggle-cursors {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    
-    .toggle-switch {
-      position: relative;
-      display: inline-block;
-      width: 40px;
-      height: 20px;
-    }
-    
-    .toggle-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: 0.4s;
-      border-radius: 20px;
-    }
-    
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 14px;
-      width: 14px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: 0.4s;
-      border-radius: 50%;
-    }
-    
-    input:checked + .slider {
-      background-color: #007bff;
-    }
-    
-    input:checked + .slider:before {
-      transform: translateX(20px);
-    }
+  .annotation-creation-box {
+    background-color: #eaeaea; /* Slightly darker background */
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 20px; /* Space between the red box and inputs */
+    align-items: flex-start; /* Align items at the top */
+  }
 
-    .annotation-comment-row {
-      background-color: #f9f9f9;
-    }
-    
-    .annotation-comment-cell {
-      padding: 10px;
-      font-size: 14px;
-      color: #555;
-    }
-    
-    .expand-comment-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      color: #007bff;
-    }
-    
-    .expand-comment-btn:hover {
-      color: #0056b3;
-    }
+  /* Red-bordered rectangle for annotation preview */
+  .annotation-preview {
+    position: relative;
+    width: 150px;
+    height: 100px;
+    border: 2px solid red;
+  }
 
+  /* Corner labels for the red-bordered rectangle */
+  .corner-label {
+    position: absolute;
+    font-size: 8px;
+    background-color: white;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+
+  .corner-label.top-left {
+    top: -10px;
+    left: -10px;
+  }
+
+  .corner-label.top-right {
+    top: -10px;
+    right: -10px;
+  }
+
+  .corner-label.bottom-left {
+    bottom: -10px;
+    left: -10px;
+  }
+
+  .corner-label.bottom-right {
+    bottom: -10px;
+    right: -10px;
+  }
+
+  /* Inputs and Button Layout */
+  .annotation-inputs {
+    display: flex;
+    flex: 1;
+    gap: 10px; /* Space between inputs and the button */
+  }
+
+  .inputs-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* Take up available space */
+    gap: 10px; /* Space between label and comment inputs */
+  }
+
+  .annotation-label-input {
+    padding: 5px 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .annotation-label-input,
+  .annotation-comment-input {
+    font-family: Arial, sans-serif; /* Set a consistent font */
+    font-size: 14px; /* Set a consistent font size */
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    color: #333; /* Ensure consistent text color */
+  }
+
+  .annotation-label-input::placeholder,
+  .annotation-comment-input::placeholder {
+    font-family: Arial, sans-serif; /* Match the font for placeholders */
+    font-size: 14px; /* Match the font size for placeholders */
+    color: #888; /* Optional: Set a placeholder color */
+  }
+
+  .create-annotation-btn {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    align-self: flex-start; /* Align button to the top */
+  }
+
+  .annotation-box {
+    position: absolute;
+    border: 2px solid red;
+    background-color: rgba(255, 0, 0, 0.2); /* Optional: Add a semi-transparent background */
+    pointer-events: none; /* Allow mouse events to pass through */
+  }
+
+  .annotation-label {
+    pointer-events: auto; /* Optional: If you want the label to remain interactive */
+  }
+
+  .create-annotation-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  /* Saved Annotations Section */
+  .saved-annotations-container {
+    margin-top: 20px;
+    background-color: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .saved-annotations-container h3 {
+    margin-bottom: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  /* Annotations Table */
+  .annotations-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .annotations-table th,
+  .annotations-table td {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .annotations-table th {
+    background-color: #f9f9f9;
+    color: #555;
+    font-size: 14px;
+    font-weight: normal;
+  }
+
+  .annotations-table td {
+    font-size: 14px;
+    color: #333;
+  }
+
+  .delete-annotation-btn {
+    padding: 5px 10px;
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .delete-annotation-btn:hover {
+    background-color: #c82333;
+  }
+
+  .annotations-table th,
+  .annotations-table td {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .annotations-table th {
+    background-color: #f9f9f9;
+    color: #555;
+    font-size: 14px;
+    font-weight: normal;
+    text-align: left;
+  }
+
+  .annotations-table td {
+    font-size: 14px;
+    color: #333;
+  }
+
+  .annotations-table input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  .toggle-cursors {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+  }
+
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 20px;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
+
+  input:checked + .slider {
+    background-color: #007bff;
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(20px);
+  }
+
+  .annotation-comment-row {
+    background-color: #f9f9f9;
+  }
+
+  .annotation-comment-cell {
+    padding: 10px;
+    font-size: 14px;
+    color: #555;
+  }
+
+  .expand-comment-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #007bff;
+  }
+
+  .expand-comment-btn:hover {
+    color: #0056b3;
+  }
 
 
-    .detected-transmission {
-      position: absolute;
-      border: 2px solid blue;
-      background-color: rgba(0, 0, 255, 0.2); /* Semi-transparent blue background */
-      pointer-events: none; /* Allow mouse events to pass through */
-    }
 
-    .transmission-toggle {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    
-    .toggle-switch {
-      position: relative;
-      display: inline-block;
-      width: 40px;
-      height: 20px;
-    }
-    
-    .toggle-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: 0.4s;
-      border-radius: 20px;
-    }
-    
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 14px;
-      width: 14px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: 0.4s;
-      border-radius: 50%;
-    }
-    
-    input:checked + .slider {
-      background-color: #007bff;
-    }
-    
-    input:checked + .slider:before {
-      transform: translateX(20px);
-    }
+  .detected-transmission {
+    position: absolute;
+    border: 2px solid blue;
+    background-color: rgba(0, 0, 255, 0.2);
+    pointer-events: none; 
+  }
+
+  .transmission-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+  }
+
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 20px;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
+
+  input:checked + .slider {
+    background-color: #007bff;
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(20px);
+  }

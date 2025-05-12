@@ -1,5 +1,5 @@
 /**
- * CS-410: Tab component. 
+ * CS-410: Tab component
  * @file Tabs.tsx
  * @authors Jun Cho, Will Cho, Grace Johnson, Connor Whynott
  * @collaborators None
