@@ -32,7 +32,7 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
   const [selectedCFile, setSelectedCFile] = useState<File | null>(null);
   const [selectedMetaFile, setSelectedMetaFile] = useState<File | null>(null);
   const [savedFiles, setSavedFiles] = useState<SavedFile[]>([]);
-  const [statusMessage, setStatusMessage] = useState<string>('Please upload a .cfile and .sigmf-meta file');
+  const [statusMessage, setStatusMessage] = useState<string>('Please upload a .cfile and .sigmf-meta file.');
   const [selectedCFileName, setSelectedCFileName] = useState<string | null>(null);
   const [selectedMetaFileName, setSelectedMetaFileName] = useState<string | null>(null);
   const [dots, setDots] = useState<string>(''); // Track the dots
@@ -394,7 +394,7 @@ const FileHandle: React.FC<FileHandleProps> = ({ fileId, onFileSelect }) => {
   // Fetch saved files on component mount
   useEffect(() => {
     fetchSavedFiles();
-    setStatusMessage('Please upload a .cfile and .sigmf file');
+    setStatusMessage('Please upload a .cfile and .sigmf file.');
   }, []);
 
   // Dot Animation Effect: Runs whenever statusMessage changes

@@ -131,7 +131,7 @@ const Annotations: React.FC<AnnotationsProps> = ({
 
         {/* Saved Annotations Section */}
         <div className="saved-annotations-container">
-            <h3>Saved Annotations</h3>
+            <h2>Saved Annotations</h2>
             <table className="annotations-table">
                 <thead>
                 <tr>
