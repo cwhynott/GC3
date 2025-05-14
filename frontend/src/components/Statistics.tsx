@@ -12,7 +12,7 @@ import Select from 'react-select';
 
 const tabOptions = [
   { value: 'metadata', label: 'Metadata Statistics' },
-  { value: 'calculated', label: 'Receiver Properties' },
+  { value: 'calculated', label: 'PSD Statistics' },
   { value: 'transmission', label: 'Transmission Statistics' },
 ];
 
@@ -153,7 +153,7 @@ const Statistics: React.FC<StatisticsProps> = ({ fileId, airview_annotations }) 
   
     return (
       <div className="metadata-container">
-        <MetadataSection title="Receiver Properties" items={fields} />
+        <MetadataSection title="PSD Statistics" items={fields} />
       </div>
     );
   };
