@@ -86,6 +86,27 @@ Run backend and frontend in separate terminals:
 4. Optional: Toggle "Download CSV" to save processed data
 5. Click "Upload" to process the files
 
+### Using AirVIEW for Transmitter Detection
+
+1. Upload a `.cfile` and its corresponding `.sigmf-meta` file:
+   - Click on "Choose .cfile" to select the signal data file.
+   - Click on "Choose .sigmf" to select the metadata file.
+2. Enable AirVIEW:
+   - Toggle the "Run AirVIEW" option before uploading the files.
+3. Configure parameters (optional):
+   - **Auto Parameters**: Toggle "Auto Parameters" to let AirVIEW automatically optimize detection parameters (`beta` and `scale`).
+   - **Manual Parameters**: If "Auto Parameters" is disabled, manually set:
+     - **Beta**: Controls the threshold for detecting outliers.
+     - **Scale**: Adjusts the granularity of the analysis.
+4. Click "Upload" to process the files:
+   - AirVIEW will analyze the signal data and detect transmitters.
+5. View detected transmitters:
+   - Detected transmitters are displayed as annotations on the spectrogram.
+   - Frequency and time ranges for each transmitter are shown.
+6. Download CSV (optional):
+   - Toggle "Download CSV" before uploading to save the processed data CSV file.
+
+
 ### Using Synthetic Data Generator
 
 1. Click "Generate Synthetic Data" in the application header
