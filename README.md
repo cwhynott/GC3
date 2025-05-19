@@ -40,10 +40,6 @@ GC3 is a comprehensive web application for uploading, visualizing, and analyzing
      ```bash
      brew services start mongodb-community
      ```
-     Alternatively, you can run the `mongod` command directly:
-     ```bash
-     mongod --dbpath /path/to/your/data/directory
-     ```
    
 ### Frontend Setup
 
