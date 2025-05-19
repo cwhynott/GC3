@@ -20,23 +20,6 @@ GC3 is a comprehensive web application for uploading, visualizing, and analyzing
 
 ## Installation
 
-### Install MongoDB (macOS)
-```sh
-brew tap mongodb/brew
-brew update
-brew install mongodb-community@8.0
-```
-
-### Start MongoDB
-```bash
-brew services start mongodb-community@8.0
-```
-
-### Stop MongoDB
-```bash
-brew services stop mongodb-community@8.0
-```
-
 ### Backend Setup
 
 1. Navigate to the backend directory:
@@ -48,6 +31,19 @@ brew services stop mongodb-community@8.0
    ```bash
    pip install Flask flask-cors pymongo matplotlib numpy scipy pillow python-dotenv
    ```
+
+3. Ensure MongoDB is installed and running locally:
+   - **Install MongoDB**:
+     Follow the instructions for your operating system from the [official MongoDB installation guide](https://www.mongodb.com/docs/manual/installation/).
+   - **Start MongoDB**:
+     On macOS, you can start MongoDB using Homebrew:
+     ```bash
+     brew services start mongodb-community
+     ```
+     Alternatively, you can run the `mongod` command directly:
+     ```bash
+     mongod --dbpath /path/to/your/data/directory
+     ```
    
 ### Frontend Setup
 
