@@ -20,6 +20,21 @@ GC3 is a comprehensive web application for uploading, visualizing, and analyzing
 
 ## Installation
 
+### Install MongoDB (macOS)
+```sh
+brew tap mongodb/brew
+brew update
+brew install mongodb-community@8.0
+```ß
+### Start MongoDB
+```bash
+brew services start mongodb-community@8.0
+```
+
+### Stop MongoDB
+```bash
+brew services stop mongodb-community@8.0
+
 ### Backend Setup
 
 1. Navigate to the backend directory:
