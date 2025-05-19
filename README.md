@@ -71,6 +71,11 @@ Run backend and frontend in separate terminals:
 
 3. Access the application at [http://localhost:5173](http://localhost:5173)
 
+4. To stop MongoDB running locally:
+   ```bash
+     brew services stop mongodb-community
+     ```
+   
 ## Usage Guide
 
 ### Uploading Files
