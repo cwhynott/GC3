@@ -31,6 +31,15 @@ GC3 is a comprehensive web application for uploading, visualizing, and analyzing
    ```bash
    pip install Flask flask-cors pymongo matplotlib numpy scipy pillow python-dotenv
    ```
+
+3. Ensure MongoDB is installed and running locally:
+   - **Install MongoDB**:
+     Follow the instructions for your operating system from the [official MongoDB installation guide](https://www.mongodb.com/docs/manual/installation/).
+   - **Start MongoDB**:
+     On macOS, you can start MongoDB using Homebrew:
+     ```bash
+     brew services start mongodb-community
+     ```
    
 ### Frontend Setup
 
@@ -62,6 +71,11 @@ Run backend and frontend in separate terminals:
 
 3. Access the application at [http://localhost:5173](http://localhost:5173)
 
+4. **To stop MongoDB running locally**:
+   ```bash
+     brew services stop mongodb-community
+     ```
+   
 ## Usage Guide
 
 ### Uploading Files
@@ -71,6 +85,18 @@ Run backend and frontend in separate terminals:
 3. Optional: Toggle "Run AirVIEW" for transmission detection
 4. Optional: Toggle "Download CSV" to save processed data
 5. Click "Upload" to process the files
+
+### Using AirVIEW for Transmitter Detection
+
+1. Toggle the "Run AirVIEW" option before uploading the files to enable AirVIEW
+2. Configure parameters:
+   - **Auto Parameters**: Toggle "Auto Parameters" to let AirVIEW automatically optimize detection parameters (`beta` and `scale`).
+   - **Manual Parameters**: If "Auto Parameters" is disabled, manually set:
+     - **Beta**: Controls the threshold for detecting outliers.
+     - **Scale**: Adjusts the granularity of the analysis.
+3. Click "Upload" to process the files and AirVIEW will analyze the signal data and detect transmitters
+4. Detected transmitters can be viewed in the statistics section
+5. Toggle "Download CSV" before uploading to save the data CSV file
 
 ### Using Synthetic Data Generator
 

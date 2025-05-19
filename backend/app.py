@@ -37,10 +37,7 @@ def create_app():
     CORS(app)  # Enable CORS for all routes
 
     # MongoDB setup using GridFS
-    client = MongoClient(
-        "mongodb://generalUser:password@150.209.91.78:27017/frequencyDB"
-    )
-
+    client = MongoClient("mongodb://localhost:27017")
     db = client['files_db']
     fs = GridFS(db)
 
